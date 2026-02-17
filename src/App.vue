@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {ref, onMounted} from 'vue'
+import EventCard from "@/components/EventCard.vue";
 
 interface Link {
     title: string
@@ -22,6 +23,8 @@ onMounted(async () => {
     <div class="gradient-background">
         <div class="container">
             <h1 class="title">ECLIPSE BOUNDARIES</h1>
+
+            <EventCard />
 
             <div class="links-section">
                 <a

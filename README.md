@@ -10,8 +10,6 @@
 <p align="center">
   A sleek, animated link-in-bio landing page built for <strong>ECLIPSE BOUNDARIES</strong> &mdash; a music collective sharing mixes, radio episodes, and releases from a single beautiful page.
 </p>
-~~~~
----
 
 ## 🌱 What is this?
 
@@ -22,27 +20,28 @@ The current deployment powers **ECLIPSE BOUNDARIES**, a music collective, connec
 - SoundCloud mixes and radio episodes
 - EP and playlist releases
 - Social profiles across YouTube, Instagram, and TikTok
+- Upcoming events with cover art, details, and ticket links
 
 ## 🌊 How It Works
 
 ```
-               +------------------+
-               |   links.json     |   Content lives in a single JSON file
-               +--------+---------+   Easy to update, version-controlled
-                        |
-                        v
-               +------------------+
-               |     App.vue      |   Vue 3 component fetches links on mount
-               |                  |   and renders them as styled buttons
-               +--------+---------+
-                        |
-                        v
-          +-------------+-------------+
-          |                           |
-   +------+------+           +-------+-------+
-   | Links List  |           | Social Links  |
-   | (dynamic)   |           | (static)      |
-   +-------------+           +---------------+
+        +------------------+       +------------------+
+        |   links.json     |       |  events.json     |
+        +--------+---------+       +--------+---------+
+                 |                          |
+                 v                          v
+        +------------------+       +------------------+
+        |     App.vue      |       |  EventCard.vue   |
+        |                  +------>|                  |
+        +--------+---------+       +--------+---------+
+                 |                          |
+                 v                          v
+   +-------------+-------------+   +-------+-------+
+   |                           |   | Event Card    |
+   +------+------+   +--------+    | (conditional) |
+   | Links List  |   | Social |    +---------------+
+   | (dynamic)   |   | Links  |
+   +-------------+   +--------+
 ```
 
 ### 🌳 Architecture
@@ -50,18 +49,20 @@ The current deployment powers **ECLIPSE BOUNDARIES**, a music collective, connec
 The app is intentionally minimal:
 
 - **No routing** &mdash; it's a single page, so no Vue Router needed
-- **No database** &mdash; links are stored in a static JSON file (`public/data/links.json`)
+- **No database** &mdash; content is stored in static JSON files (`public/data/links.json`, `public/data/events.json`)
 - **No backend** &mdash; builds to pure static HTML/CSS/JS, deployable anywhere
 
 ### 💧 Data Flow
 
 1. The Vue app mounts and fetches `links.json`
-2. Links are rendered dynamically via `v-for` as styled button cards
-3. Social media links are rendered as a separate section below
-4. All external links open in a new tab with `rel="noopener noreferrer"`
+2. The `EventCard` component fetches `events.json` &mdash; if an event exists, it renders a card with cover image, title, location, date, and ticket link; otherwise it stays hidden
+3. Links are rendered dynamically via `v-for` as styled button cards
+4. Social media links are rendered as a separate section below
+5. All external links open in a new tab with `rel="noopener noreferrer"`
 
 ## 🌸 Features
 
+- **Event card** &mdash; optional, auto-hidden card showcasing an upcoming event with cover image, details, and ticket button
 - **Animated gradient background** &mdash; smooth 12-second looping gradient from white to sky blue
 - **Custom typography** &mdash; Matter font family (Heavy, SemiBold) for a distinctive brand feel
 - **Hover interactions** &mdash; subtle shadow and color transitions on all interactive elements
@@ -113,6 +114,26 @@ Edit `public/data/links.json` to add, remove, or reorder links:
 ]
 ```
 
+### 🎤 Updating Events
+
+Edit `public/data/events.json` to show an upcoming event. The card auto-hides when no event is set.
+
+**Show an event:**
+
+```json
+{
+  "title": "Event Title",
+  "coverImage": "/data/events/cover.jpg",
+  "location": "Venue Name, City",
+  "date": "2026-03-15T20:00:00",
+  "ticketLink": "https://example.com/tickets"
+}
+```
+
+**Hide the event card:** set the file contents to `null` or `{}`.
+
+Place cover images in `public/data/events/` and reference them via `coverImage`.
+
 ### 🌐 Updating Social Links
 
 Social media links are defined directly in `src/App.vue` within the `social-section` template block.
@@ -157,17 +178,21 @@ This is a static site &mdash; deploy it anywhere:
 ```
 syvora-linkinbio/
 ├── public/
-│   └── fonts/            # Custom Matter font files (.otf)
+│   ├── data/
+│   │   ├── links.json        # Link content (title + URL pairs)
+│   │   ├── events.json       # Current event (or null to hide)
+│   │   └── events/           # Event cover images
+│   └── fonts/                # Custom Matter font files (.otf)
 ├── src/
-│   ├── App.vue           # Main (and only) component
-│   ├── main.ts           # Vue app entry point
-│   ├── styles.css        # Global reset styles
-│   └── data/
-│       └── links.json    # Link content (title + URL pairs)
-├── index.html            # HTML shell
-├── vite.config.ts        # Vite + Vue plugin config
-├── tsconfig.json         # TypeScript project references
-└── package.json          # Dependencies and scripts
+│   ├── App.vue               # Main layout component
+│   ├── components/
+│   │   └── EventCard.vue     # Event card component (auto-hides when empty)
+│   ├── main.ts               # Vue app entry point
+│   └── styles.css            # Global reset styles
+├── index.html                # HTML shell
+├── vite.config.ts            # Vite + Vue plugin config
+├── tsconfig.json             # TypeScript project references
+└── package.json              # Dependencies and scripts
 ```
 
 ---
