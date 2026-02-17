@@ -1,42 +1,177 @@
-# syvora-linkinbio
+<p align="center">
+  <img src="https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white" alt="Vue 3" />
+  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/License-Private-lightgrey?style=flat-square" alt="Private" />
+</p>
 
-This template should help get you started developing with Vue 3 in Vite.
+<h1 align="center">🌿 Syvora Link in Bio 🌿</h1>
 
-## Recommended IDE Setup
+<p align="center">
+  A sleek, animated link-in-bio landing page built for <strong>ECLIPSE BOUNDARIES</strong> &mdash; a music collective sharing mixes, radio episodes, and releases from a single beautiful page.
+</p>
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+---
 
-## Recommended Browser Setup
+## 🌱 What is this?
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+**Syvora Link in Bio** is a lightweight, single-page application that serves as a central hub for all of a creator's important links. Think of it as a modern alternative to Linktree &mdash; fully self-hosted, blazing fast, and completely customizable.
 
-## Type Support for `.vue` Imports in TS
+The current deployment powers **ECLIPSE BOUNDARIES**, a music collective, connecting their audience to:
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+- SoundCloud mixes and radio episodes
+- EP and playlist releases
+- Social profiles across YouTube, Instagram, and TikTok
 
-## Customize configuration
+## 🌊 How It Works
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+```
+               +------------------+
+               |   links.json     |   Content lives in a single JSON file
+               +--------+---------+   Easy to update, version-controlled
+                        |
+                        v
+               +------------------+
+               |     App.vue      |   Vue 3 component fetches links on mount
+               |                  |   and renders them as styled buttons
+               +--------+---------+
+                        |
+                        v
+          +-------------+-------------+
+          |                           |
+   +------+------+           +-------+-------+
+   | Links List  |           | Social Links  |
+   | (dynamic)   |           | (static)      |
+   +-------------+           +---------------+
+```
 
-## Project Setup
+### 🌳 Architecture
 
-```sh
+The app is intentionally minimal:
+
+- **No routing** &mdash; it's a single page, so no Vue Router needed
+- **No database** &mdash; links are stored in a static JSON file (`src/data/links.json`)
+- **No backend** &mdash; builds to pure static HTML/CSS/JS, deployable anywhere
+
+### 💧 Data Flow
+
+1. The Vue app mounts and fetches `links.json`
+2. Links are rendered dynamically via `v-for` as styled button cards
+3. Social media links are rendered as a separate section below
+4. All external links open in a new tab with `rel="noopener noreferrer"`
+
+## 🌸 Features
+
+- **Animated gradient background** &mdash; smooth 12-second looping gradient from white to sky blue
+- **Custom typography** &mdash; Matter font family (Heavy, SemiBold) for a distinctive brand feel
+- **Hover interactions** &mdash; subtle shadow and color transitions on all interactive elements
+- **Fully responsive** &mdash; optimized layout for mobile devices (breakpoint at 600px)
+- **Fast builds** &mdash; Vite 7 for sub-second HMR and optimized production bundles
+- **Type-safe** &mdash; full TypeScript support with `vue-tsc` type checking
+
+## 🌿 Quick Start
+
+### 🌾 Prerequisites
+
+- Node.js `^20.19.0` or `>=22.12.0`
+- Yarn
+
+### 🌱 Development
+
+```bash
+# Install dependencies
 yarn
+
+# Start dev server with hot reload
+yarn start
 ```
 
-### Compile and Hot-Reload for Development
+### 🌲 Production
 
-```sh
-yarn dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
+```bash
+# Type-check and build for production
 yarn build
+
+# Preview the production build locally
+yarn preview
 ```
+
+The production build outputs to `dist/` &mdash; a self-contained static site ready for deployment.
+
+## 🍃 Customization
+
+### 🔗 Updating Links
+
+Edit `src/data/links.json` to add, remove, or reorder links:
+
+```json
+[
+  {
+    "title": "Your Link Title",
+    "link": "https://example.com"
+  }
+]
+```
+
+### 🌐 Updating Social Links
+
+Social media links are defined directly in `src/App.vue` within the `social-section` template block.
+
+### 🎨 Theming
+
+The visual identity is controlled through CSS in `src/App.vue`:
+
+| Element             | Property                     | Default                       |
+|---------------------|------------------------------|-------------------------------|
+| Background gradient | `linear-gradient` colors     | `white` to `#73c3fe`         |
+| Animation speed     | `animation` duration         | `12s`                         |
+| Title font          | `font-family`                | `Matter-Heavy`                |
+| Button font         | `font-family`                | `Matter-SemiBold`             |
+| Button background   | `background`                 | `rgba(255, 255, 255, 0.95)`  |
+| Button shadow       | `box-shadow` color           | `rgba(115, 195, 254, 0.2)`   |
+
+## 🌍 Deployment
+
+This is a static site &mdash; deploy it anywhere:
+
+| Platform         | Command / Notes                                      |
+|------------------|------------------------------------------------------|
+| **Vercel**       | Connect repo, framework preset: Vite                 |
+| **Netlify**      | Build command: `yarn build`, publish dir: `dist`     |
+| **GitHub Pages** | Deploy the `dist/` folder                            |
+| **Cloudflare**   | Build command: `yarn build`, output dir: `dist`      |
+
+## 🌻 Tech Stack
+
+| Layer       | Technology                |
+|-------------|---------------------------|
+| Framework   | Vue 3 (Composition API)   |
+| Language    | TypeScript 5.9            |
+| Build Tool  | Vite 7                    |
+| Fonts       | Matter (Heavy, SemiBold)  |
+| Styling     | Scoped CSS with animations|
+| Data        | Static JSON               |
+
+## 🌾 Project Structure
+
+```
+syvora-linkinbio/
+├── public/
+│   └── fonts/            # Custom Matter font files (.otf)
+├── src/
+│   ├── App.vue           # Main (and only) component
+│   ├── main.ts           # Vue app entry point
+│   ├── styles.css        # Global reset styles
+│   └── data/
+│       └── links.json    # Link content (title + URL pairs)
+├── index.html            # HTML shell
+├── vite.config.ts        # Vite + Vue plugin config
+├── tsconfig.json         # TypeScript project references
+└── package.json          # Dependencies and scripts
+```
+
+---
+
+<p align="center">
+  🌎 Built by <strong>Syvora</strong> 🌎
+</p>
