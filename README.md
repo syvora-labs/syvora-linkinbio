@@ -10,7 +10,7 @@
 <p align="center">
   A sleek, animated link-in-bio landing page built for <strong>ECLIPSE BOUNDARIES</strong> &mdash; a music collective sharing mixes, radio episodes, and releases from a single beautiful page.
 </p>
-
+~~~~
 ---
 
 ## 🌱 What is this?
@@ -50,7 +50,7 @@ The current deployment powers **ECLIPSE BOUNDARIES**, a music collective, connec
 The app is intentionally minimal:
 
 - **No routing** &mdash; it's a single page, so no Vue Router needed
-- **No database** &mdash; links are stored in a static JSON file (`src/data/links.json`)
+- **No database** &mdash; links are stored in a static JSON file (`public/data/links.json`)
 - **No backend** &mdash; builds to pure static HTML/CSS/JS, deployable anywhere
 
 ### 💧 Data Flow
@@ -102,7 +102,7 @@ The production build outputs to `dist/` &mdash; a self-contained static site rea
 
 ### 🔗 Updating Links
 
-Edit `src/data/links.json` to add, remove, or reorder links:
+Edit `public/data/links.json` to add, remove, or reorder links:
 
 ```json
 [

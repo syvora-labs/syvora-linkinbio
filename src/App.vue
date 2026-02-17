@@ -10,7 +10,7 @@ const links = ref<Link[]>([])
 
 onMounted(async () => {
     try {
-        const response = await fetch('/src/data/links.json')
+        const response = await fetch('/data/links.json')
         links.value = await response.json()
     } catch (error) {
         console.error('Error loading links:', error)
