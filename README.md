@@ -25,11 +25,11 @@ The current deployment powers **ECLIPSE BOUNDARIES**, a music collective, connec
 ## 🌊 How It Works
 
 ```
-        +------------------+       +------------------+
-        |   links.json     |       |  events.json     |
-        +--------+---------+       +--------+---------+
-                 |                          |
-                 v                          v
+        +------------------+       +----------------------+
+        |   links.json     |       |  Supabase (events)   |
+        +--------+---------+       +----------+-----------+
+                 |                            |
+                 v                            v
         +------------------+       +------------------+
         |     App.vue      |       |  EventCard.vue   |
         |                  +------>|                  |
@@ -49,13 +49,14 @@ The current deployment powers **ECLIPSE BOUNDARIES**, a music collective, connec
 The app is intentionally minimal:
 
 - **No routing** &mdash; it's a single page, so no Vue Router needed
-- **No database** &mdash; content is stored in static JSON files (`public/data/links.json`, `public/data/events.json`)
 - **No backend** &mdash; builds to pure static HTML/CSS/JS, deployable anywhere
+- **Links** &mdash; stored in a static JSON file (`public/data/links.json`)
+- **Events** &mdash; fetched live from a Supabase database (`events` table)
 
 ### 💧 Data Flow
 
 1. The Vue app mounts and fetches `links.json`
-2. The `EventCard` component fetches `events.json` &mdash; if an event exists, it renders a card with cover image, title, location, date, and ticket link; otherwise it stays hidden
+2. The `EventCard` component queries Supabase for the soonest upcoming event (`is_draft=false`, `is_archived=false`, `event_date >= now`) &mdash; if found, it renders a card with cover image, title, location, date, and ticket link; otherwise it stays hidden
 3. Links are rendered dynamically via `v-for` as styled button cards
 4. Social media links are rendered as a separate section below
 5. All external links open in a new tab with `rel="noopener noreferrer"`
@@ -76,6 +77,21 @@ The app is intentionally minimal:
 
 - Node.js `^20.19.0` or `>=22.12.0`
 - Yarn
+
+### 🔑 Environment Variables
+
+Copy `.env.example` to `.env` and fill in your Supabase credentials:
+
+```bash
+cp .env.example .env
+```
+
+| Variable               | Description                        |
+|------------------------|------------------------------------|
+| `VITE_SUPABASE_URL`    | Your Supabase project URL          |
+| `VITE_SUPABASE_ANON_KEY` | Your Supabase anon (public) key  |
+
+For Vercel deployments, add these as environment variables in the project settings.
 
 ### 🌱 Development
 
@@ -116,23 +132,7 @@ Edit `public/data/links.json` to add, remove, or reorder links:
 
 ### 🎤 Updating Events
 
-Edit `public/data/events.json` to show an upcoming event. The card auto-hides when no event is set.
-
-**Show an event:**
-
-```json
-{
-  "title": "Event Title",
-  "coverImage": "/data/events/cover.jpg",
-  "location": "Venue Name, City",
-  "date": "2026-03-15T20:00:00",
-  "ticketLink": "https://example.com/tickets"
-}
-```
-
-**Hide the event card:** set the file contents to `null` or `{}`.
-
-Place cover images in `public/data/events/` and reference them via `coverImage`.
+Events are managed in the **syvora-erp** Supabase database. The `EventCard` automatically displays the soonest upcoming event where `is_draft = false` and `is_archived = false`. To hide the card, either archive the event or set it as a draft in the ERP system.
 
 ### 🌐 Updating Social Links
 
@@ -171,7 +171,8 @@ This is a static site &mdash; deploy it anywhere:
 | Build Tool  | Vite 7                    |
 | Fonts       | Matter (Heavy, SemiBold)  |
 | Styling     | Scoped CSS with animations|
-| Data        | Static JSON               |
+| Links data  | Static JSON               |
+| Events data | Supabase                  |
 
 ## 🌾 Project Structure
 
@@ -179,16 +180,16 @@ This is a static site &mdash; deploy it anywhere:
 syvora-linkinbio/
 ├── public/
 │   ├── data/
-│   │   ├── links.json        # Link content (title + URL pairs)
-│   │   ├── events.json       # Current event (or null to hide)
-│   │   └── events/           # Event cover images
+│   │   └── links.json        # Link content (title + URL pairs)
 │   └── fonts/                # Custom Matter font files (.otf)
 ├── src/
 │   ├── App.vue               # Main layout component
 │   ├── components/
-│   │   └── EventCard.vue     # Event card component (auto-hides when empty)
+│   │   └── EventCard.vue     # Event card component (fetches from Supabase, auto-hides when no event)
+│   ├── supabase.ts           # Supabase client (reads VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY)
 │   ├── main.ts               # Vue app entry point
 │   └── styles.css            # Global reset styles
+├── .env.example              # Required environment variables template
 ├── index.html                # HTML shell
 ├── vite.config.ts            # Vite + Vue plugin config
 ├── tsconfig.json             # TypeScript project references

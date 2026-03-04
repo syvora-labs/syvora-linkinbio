@@ -1,25 +1,30 @@
 <script setup lang="ts">
 import {ref, onMounted} from 'vue'
+import {supabase} from '@/supabase'
 
 interface Event {
     title: string
-    coverImage: string
+    artwork_url: string
     location: string
-    date: string
-    ticketLink: string
+    event_date: string
+    ticket_link: string
 }
 
 const event = ref<Event | null>(null)
 
 onMounted(async () => {
-    try {
-        const response = await fetch('/data/events.json')
-        const data = await response.json()
-        if (data && data.title) {
-            event.value = data
-        }
-    } catch {
-        // No event available — card stays hidden
+    const {data, error} = await supabase
+        .from('events')
+        .select('title, artwork_url, location, event_date, ticket_link')
+        .eq('is_draft', false)
+        .eq('is_archived', false)
+        .gte('event_date', new Date().toISOString())
+        .order('event_date', {ascending: true})
+        .limit(1)
+        .maybeSingle()
+
+    if (data) {
+        event.value = data
     }
 })
 
@@ -38,13 +43,13 @@ function formatEventDate(dateStr: string): string {
 
 <template>
     <div v-if="event" class="event-card">
-        <img :src="event.coverImage" :alt="event.title" class="event-cover" />
+        <img :src="event.artwork_url" :alt="event.title" class="event-cover" />
         <div class="event-details">
             <h2 class="event-title">{{ event.title }}</h2>
             <p class="event-location">{{ event.location }}</p>
-            <p class="event-date">{{ formatEventDate(event.date) }}</p>
+            <p class="event-date">{{ formatEventDate(event.event_date) }}</p>
             <a
-                :href="event.ticketLink"
+                :href="event.ticket_link"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="ticket-button"
