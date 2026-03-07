@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {ref, onMounted} from 'vue'
 import EventCard from "@/components/EventCard.vue";
+import RadioList from "@/components/RadioList.vue";
 
 interface Link {
     title: string
@@ -38,6 +39,8 @@ onMounted(async () => {
                     {{ link.title }}
                 </a>
             </div>
+
+            <RadioList />
 
             <div class="social-section">
                 <a
