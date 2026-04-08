@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A single-page link-in-bio Vue 3 application for the ECLIPSE BOUNDARIES music collective. It renders dynamic links from a static JSON file with an animated gradient UI. The current event card is fetched live from a Supabase database. There is no routing and no state management — intentionally minimal.
+A link-in-bio Vue 3 application for the ECLIPSE BOUNDARIES music collective. It renders dynamic links from a static JSON file with an animated gradient UI. The current event card is fetched live from a Supabase database. Ticket sales are handled via an integrated ticket shop with Stripe Checkout, powered by Supabase Edge Functions.
 
 ## Commands
 
@@ -20,15 +20,41 @@ No test runner or linter is configured.
 
 ## Architecture
 
-The entire app is a single Vue component (`src/App.vue`) that fetches `/data/links.json` on mount and renders styled link buttons. Social links are hardcoded in the template. The `EventCard` component fetches the current event from Supabase.
+The app uses Vue Router with three routes: home (`/`), ticket shop (`/event/:eventId/tickets`), and ticket success (`/event/:eventId/tickets/success`).
 
+- **Entry**: `src/main.ts` → mounts `App.vue` (router shell with gradient background) to `#app`
+- **Router**: `src/router/index.ts` — Vue Router with history mode
+- **Views**: `src/views/HomeView.vue` (links, events, radios, socials), `TicketShopView.vue` (ticket purchase), `TicketSuccessView.vue` (post-payment)
 - **Content**: `public/data/links.json` — array of `{ title, link }` objects
 - **Events**: fetched from Supabase `events` table — the soonest non-draft, non-archived event with `event_date >= now` is shown in `EventCard`
+- **Ticket Sales**: `EventCard` routes to the internal ticket shop when `ticket_link` is null; otherwise links externally
 - **Supabase client**: `src/supabase.ts` — initialized from `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` env vars
-- **Social links**: defined directly in `src/App.vue` template (`social-section`)
+- **Supabase Edge Functions**: `supabase/functions/` — server-side ticket logic (see below)
+- **Social links**: defined directly in `HomeView.vue` template (`social-section`)
 - **Fonts**: custom Matter font family in `public/fonts/` (Heavy, SemiBold, Bold, Regular .otf files)
-- **Styles**: scoped CSS in `App.vue` + global reset in `src/styles.css`. No CSS framework.
-- **Entry**: `src/main.ts` → mounts `App.vue` to `#app`
+- **Styles**: scoped CSS in components + global reset in `src/styles.css`. No CSS framework.
+- **SPA routing**: `vercel.json` rewrites all paths to `index.html` for client-side routing
+
+## Supabase Edge Functions
+
+Located in `supabase/functions/`. Deployed separately via `supabase functions deploy`.
+
+- **`get-ticket-phases`**: Returns available ticket phases for an event (filters by active status and sale window, enriches with sold count and remaining availability)
+- **`create-checkout`**: Validates ticket selection, creates a pending order + ticket records in the database, creates a Stripe Checkout Session, returns the checkout URL
+- **`stripe-webhook`**: Handles Stripe webhook events (`checkout.session.completed`, `checkout.session.expired`, `charge.refunded`). Updates order status and ticket records accordingly.
+
+Edge functions use the service role key (auto-available as `SUPABASE_SERVICE_ROLE_KEY`). Stripe keys are stored in the `mandators` table and looked up per-event.
+
+Required Supabase secrets (set via `supabase secrets set`):
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided automatically
+- Stripe keys are read from the `mandators` table (no additional secrets needed)
+
+## Database Tables (ticket sales)
+
+- **`ticket_phases`**: Pricing tiers per event (name, price_cents, currency, quantity, sale window, sort_order, is_active)
+- **`ticket_orders`**: Purchase transactions (buyer info, status, Stripe session/payment IDs, totals)
+- **`tickets`**: Individual tickets per order (qr_token for door scanning, status, check-in tracking)
+- **`mandators`**: Extended with `stripe_secret_key` and `stripe_webhook_secret`
 
 ## Key Conventions
 

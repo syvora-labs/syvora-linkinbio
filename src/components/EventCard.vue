@@ -3,19 +3,20 @@ import {ref, onMounted} from 'vue'
 import {supabase} from '@/supabase'
 
 interface Event {
+    id: string
     title: string
     artwork_url: string
     location: string
     event_date: string
-    ticket_link: string
+    ticket_link: string | null
 }
 
 const event = ref<Event | null>(null)
 
 onMounted(async () => {
-    const {data, error} = await supabase
+    const {data} = await supabase
         .from('events')
-        .select('title, artwork_url, location, event_date, ticket_link')
+        .select('id, title, artwork_url, location, event_date, ticket_link')
         .eq('is_draft', false)
         .eq('is_archived', false)
         .gte('event_date', new Date().toISOString())
@@ -49,6 +50,7 @@ function formatEventDate(dateStr: string): string {
             <p class="event-location">{{ event.location }}</p>
             <p class="event-date">{{ formatEventDate(event.event_date) }}</p>
             <a
+                v-if="event.ticket_link"
                 :href="event.ticket_link"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -56,6 +58,13 @@ function formatEventDate(dateStr: string): string {
             >
                 TICKETS
             </a>
+            <router-link
+                v-else
+                :to="{name: 'ticket-shop', params: {eventId: event.id}}"
+                class="ticket-button"
+            >
+                TICKETS
+            </router-link>
         </div>
     </div>
 </template>
