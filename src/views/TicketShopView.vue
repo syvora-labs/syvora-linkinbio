@@ -70,10 +70,21 @@ const serviceFeeCents = computed(() => totalItems.value * SERVICE_FEE_CENTS)
 
 const totalCents = computed(() => subtotalCents.value + serviceFeeCents.value)
 
+const emailTouched = ref(false)
+
+const isValidEmail = computed(() => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyerEmail.value.trim())
+})
+
+const emailError = computed(() => {
+    if (!emailTouched.value || !buyerEmail.value.trim()) return ''
+    return isValidEmail.value ? '' : 'Please enter a valid email address'
+})
+
 const canCheckout = computed(() => {
     return totalItems.value > 0
         && buyerName.value.trim()
-        && buyerEmail.value.trim()
+        && isValidEmail.value
         && buyerBirthdate.value
         && buyerCountry.value.trim()
         && buyerZipcode.value.trim()
@@ -283,7 +294,10 @@ async function handleCheckout() {
                             type="email"
                             placeholder="Email Address"
                             class="form-input"
+                            :class="{'input-error': emailError}"
+                            @blur="emailTouched = true"
                         />
+                        <p v-if="emailError" class="field-error">{{ emailError }}</p>
                     </div>
                     <div class="form-group">
                         <input
@@ -640,6 +654,17 @@ async function handleCheckout() {
 
 .form-input:focus {
     box-shadow: 0 4px 20px rgba(115, 195, 254, 0.4);
+}
+
+.form-input.input-error {
+    box-shadow: 0 0 0 2px #e74c3c, 0 4px 15px rgba(115, 195, 254, 0.2);
+}
+
+.field-error {
+    font-family: 'Matter-Regular', sans-serif;
+    font-size: 0.8rem;
+    color: #e74c3c;
+    margin: 6px 0 0;
 }
 
 .form-input[type="date"] {
