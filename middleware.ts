@@ -110,5 +110,22 @@ export default async function middleware(request: Request): Promise<Response> {
         return handleEvent(res, eventMatch[1])
     }
 
+    // Private / transactional routes: let the SPA render but stamp headers
+    // so crawlers never index them (belt-and-braces with the Disallow rules
+    // in robots.txt and the in-app useSeoMeta robots meta).
+    if (
+        /^\/event\/[^/]+\/tickets(\/success)?$/.test(path) ||
+        /^\/tickets\/order\//.test(path)
+    ) {
+        const res = await next()
+        const headers = new Headers(res.headers)
+        headers.set('x-robots-tag', 'noindex, nofollow')
+        headers.set('x-seo-middleware', 'private')
+        return new Response(res.body, {
+            status: res.status,
+            headers,
+        })
+    }
+
     return next()
 }
