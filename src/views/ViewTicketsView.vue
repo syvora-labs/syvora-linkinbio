@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {ref, onMounted} from 'vue'
 import {useRoute} from 'vue-router'
+import {useSeoMeta} from '@unhead/vue'
 import {supabase} from '@/supabase'
 import QRCode from 'qrcode'
 
@@ -31,6 +32,11 @@ interface Ticket {
 
 const route = useRoute()
 const orderId = route.params.orderId as string
+
+useSeoMeta({
+    title: 'Your tickets | ECLIPSE BOUNDARIES',
+    robots: 'noindex, nofollow',
+})
 
 const event = ref<Event | null>(null)
 const order = ref<Order | null>(null)
