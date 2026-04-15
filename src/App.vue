@@ -5,20 +5,6 @@
 </template>
 
 <style scoped>
-@font-face {
-    font-family: 'Matter-Heavy';
-    src: url('/fonts/Matter-Heavy.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Matter-SemiBold';
-    src: url('/fonts/Matter-SemiBold.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
-
 .gradient-background {
     background: linear-gradient(300deg, white, #73c3fe);
     background-size: 120% 120%;

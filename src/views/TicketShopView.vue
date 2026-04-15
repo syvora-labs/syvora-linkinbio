@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {ref, computed, onMounted} from 'vue'
 import {useRoute} from 'vue-router'
+import {useSeoMeta, useHead} from '@unhead/vue'
 import {supabase} from '@/supabase'
 
 interface Event {
@@ -31,6 +32,20 @@ interface PhaseSelection {
 
 const route = useRoute()
 const eventId = route.params.eventId as string
+
+useSeoMeta({
+    title: 'Tickets | ECLIPSE BOUNDARIES',
+    robots: 'noindex, nofollow',
+})
+
+useHead({
+    link: [
+        {
+            rel: 'canonical',
+            href: `https://eclipseboundaries.ch/event/${eventId}`,
+        },
+    ],
+})
 
 const event = ref<Event | null>(null)
 const phases = ref<TicketPhase[]>([])

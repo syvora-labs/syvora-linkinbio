@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /event/*/tickets
+Disallow: /event/*/tickets/success
+Disallow: /tickets/order/
+Disallow: /api/
+
+Sitemap: https://eclipseboundaries.ch/sitemap.xml

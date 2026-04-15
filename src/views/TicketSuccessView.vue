@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {ref, onMounted} from 'vue'
 import {useRoute} from 'vue-router'
+import {useSeoMeta} from '@unhead/vue'
 import {supabase} from '@/supabase'
 
 interface Event {
@@ -13,6 +14,11 @@ interface Event {
 const route = useRoute()
 const eventId = route.params.eventId as string
 const sessionId = route.query.session_id as string | undefined
+
+useSeoMeta({
+    title: 'Order confirmed | ECLIPSE BOUNDARIES',
+    robots: 'noindex, nofollow',
+})
 
 const orderId = ref(route.query.order_id as string | undefined)
 

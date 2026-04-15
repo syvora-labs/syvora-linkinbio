@@ -10,6 +10,11 @@ const router = createRouter({
             component: HomeView,
         },
         {
+            path: '/event/:eventId',
+            name: 'event-detail',
+            component: () => import('@/views/EventDetailView.vue'),
+        },
+        {
             path: '/event/:eventId/tickets',
             name: 'ticket-shop',
             component: () => import('@/views/TicketShopView.vue'),

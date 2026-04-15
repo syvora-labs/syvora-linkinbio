@@ -5,7 +5,7 @@ import {supabase} from '@/supabase'
 interface Event {
     id: string
     title: string
-    artwork_url: string
+    artwork_url: string | null
     location: string
     event_date: string
     ticket_link: string | null
@@ -56,11 +56,20 @@ function formatCompactDate(dateStr: string): string {
 </script>
 
 <template>
-    <div v-if="featured" class="events">
-        <div class="event-card">
-            <img :src="featured.artwork_url" :alt="featured.title" class="event-cover" />
+    <section v-if="featured" class="events" aria-labelledby="featured-event-heading">
+        <article class="event-card">
+            <img
+                v-if="featured.artwork_url"
+                :src="featured.artwork_url"
+                :alt="`${featured.title} event artwork — ${formatCompactDate(featured.event_date)} at ${featured.location}`"
+                class="event-cover"
+                fetchpriority="high"
+                loading="eager"
+            />
             <div class="event-details">
-                <h2 class="event-title">{{ featured.title }}</h2>
+                <h2 id="featured-event-heading" class="event-title">
+                    {{ featured.title }}
+                </h2>
                 <p class="event-location">{{ featured.location }}</p>
                 <p class="event-date">{{ formatEventDate(featured.event_date) }}</p>
                 <a
@@ -74,16 +83,16 @@ function formatCompactDate(dateStr: string): string {
                 </a>
                 <router-link
                     v-else
-                    :to="{name: 'ticket-shop', params: {eventId: featured.id}}"
+                    :to="{ name: 'ticket-shop', params: { eventId: featured.id } }"
                     class="ticket-button"
                 >
                     TICKETS
                 </router-link>
             </div>
-        </div>
+        </article>
 
-        <div v-if="upcoming.length" class="upcoming-list">
-            <p class="upcoming-heading">More upcoming shows</p>
+        <section v-if="upcoming.length" class="upcoming-list" aria-labelledby="upcoming-heading">
+            <h2 id="upcoming-heading" class="upcoming-heading">More upcoming shows</h2>
             <template v-for="event in upcoming" :key="event.id">
                 <a
                     v-if="event.ticket_link"
@@ -92,7 +101,13 @@ function formatCompactDate(dateStr: string): string {
                     rel="noopener noreferrer"
                     class="upcoming-row"
                 >
-                    <img :src="event.artwork_url" :alt="event.title" class="upcoming-thumb" />
+                    <img
+                        v-if="event.artwork_url"
+                        :src="event.artwork_url"
+                        :alt="`${event.title} — ${formatCompactDate(event.event_date)} at ${event.location}`"
+                        class="upcoming-thumb"
+                        loading="lazy"
+                    />
                     <div class="upcoming-info">
                         <p class="upcoming-title">{{ event.title }}</p>
                         <p class="upcoming-meta">
@@ -103,10 +118,16 @@ function formatCompactDate(dateStr: string): string {
                 </a>
                 <router-link
                     v-else
-                    :to="{name: 'ticket-shop', params: {eventId: event.id}}"
+                    :to="{ name: 'ticket-shop', params: { eventId: event.id } }"
                     class="upcoming-row"
                 >
-                    <img :src="event.artwork_url" :alt="event.title" class="upcoming-thumb" />
+                    <img
+                        v-if="event.artwork_url"
+                        :src="event.artwork_url"
+                        :alt="`${event.title} — ${formatCompactDate(event.event_date)} at ${event.location}`"
+                        class="upcoming-thumb"
+                        loading="lazy"
+                    />
                     <div class="upcoming-info">
                         <p class="upcoming-title">{{ event.title }}</p>
                         <p class="upcoming-meta">
@@ -116,25 +137,11 @@ function formatCompactDate(dateStr: string): string {
                     <span class="upcoming-chevron" aria-hidden="true">→</span>
                 </router-link>
             </template>
-        </div>
-    </div>
+        </section>
+    </section>
 </template>
 
 <style scoped>
-@font-face {
-    font-family: 'Matter-Heavy';
-    src: url('/fonts/Matter-Heavy.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Matter-SemiBold';
-    src: url('/fonts/Matter-SemiBold.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
-
 .events {
     width: 100%;
     display: flex;
