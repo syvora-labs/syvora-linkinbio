@@ -62,6 +62,39 @@ async function handleHome(response: Response): Promise<Response> {
     })
 }
 
+async function handleEvent(
+    response: Response,
+    eventId: string,
+): Promise<Response> {
+    let event
+    try {
+        event = await fetchEventById(eventId)
+    } catch {
+        return new Response('Temporary error', { status: 503 })
+    }
+    if (!event) {
+        return new Response('Not found', {
+            status: 404,
+            headers: { 'x-robots-tag': 'noindex, nofollow' },
+        })
+    }
+    const html = await response.text()
+    const meta = buildEventMeta(event)
+    const eventLd = buildEventJsonLd(event)
+    const crumbsLd = buildBreadcrumbJsonLd(event)
+    const headInjection = renderSeoHead(meta, [eventLd, crumbsLd])
+    const rewritten = injectIntoHead(stripDefaultMeta(html), headInjection)
+    return new Response(rewritten, {
+        status: 200,
+        headers: {
+            ...Object.fromEntries(response.headers),
+            'content-type': 'text/html; charset=utf-8',
+            'cache-control': CACHE_HEADER,
+            'x-seo-middleware': 'event',
+        },
+    })
+}
+
 export default async function middleware(request: Request): Promise<Response> {
     const url = new URL(request.url)
     const path = url.pathname
@@ -69,6 +102,12 @@ export default async function middleware(request: Request): Promise<Response> {
     if (path === '/') {
         const res = await next()
         return handleHome(res)
+    }
+
+    const eventMatch = path.match(/^\/event\/([^/]+)$/)
+    if (eventMatch) {
+        const res = await next()
+        return handleEvent(res, eventMatch[1])
     }
 
     return next()
