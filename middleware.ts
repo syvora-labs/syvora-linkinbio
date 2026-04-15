@@ -1,4 +1,3 @@
-import { next } from '@vercel/edge'
 import {
     buildHomeMeta,
     buildMusicGroupJsonLd,
@@ -25,6 +24,21 @@ export const config = {
 
 const CACHE_HEADER = 'public, s-maxage=300, stale-while-revalidate=3600'
 
+/**
+ * Fetch the static `index.html` shell directly. In Vercel Edge middleware
+ * for non-Next.js apps, `next()` returns a continuation signal rather than
+ * a real Response with body — so modifying its body has no effect. Going
+ * out via `fetch()` gives us the real HTML we can transform.
+ *
+ * `/index.html` is not listed in `config.matcher`, so this fetch does not
+ * re-trigger the middleware.
+ */
+async function fetchStaticShell(requestUrl: string): Promise<string> {
+    const shellUrl = new URL('/index.html', requestUrl).toString()
+    const response = await fetch(shellUrl)
+    return response.text()
+}
+
 function injectIntoHead(html: string, injected: string): string {
     return html.replace('</head>', `    ${injected}\n  </head>`)
 }
@@ -40,8 +54,8 @@ function stripDefaultMeta(html: string): string {
         .replace(/<meta name="twitter:[^"]*"[^>]*>/g, '')
 }
 
-async function handleHome(response: Response): Promise<Response> {
-    const html = await response.text()
+async function renderHome(requestUrl: string): Promise<Response> {
+    const html = await fetchStaticShell(requestUrl)
     let events: SeoEvent[]
     try {
         events = await fetchUpcomingEvents(10)
@@ -55,7 +69,6 @@ async function handleHome(response: Response): Promise<Response> {
     return new Response(rewritten, {
         status: 200,
         headers: {
-            ...Object.fromEntries(response.headers),
             'content-type': 'text/html; charset=utf-8',
             'cache-control': CACHE_HEADER,
             'x-seo-middleware': 'home',
@@ -63,8 +76,8 @@ async function handleHome(response: Response): Promise<Response> {
     })
 }
 
-async function handleEvent(
-    response: Response,
+async function renderEvent(
+    requestUrl: string,
     eventId: string,
 ): Promise<Response> {
     let event: SeoEvent | null
@@ -79,7 +92,7 @@ async function handleEvent(
             headers: { 'x-robots-tag': 'noindex, nofollow' },
         })
     }
-    const html = await response.text()
+    const html = await fetchStaticShell(requestUrl)
     const meta = buildEventMeta(event)
     const eventLd = buildEventJsonLd(event)
     const crumbsLd = buildBreadcrumbJsonLd(event)
@@ -88,7 +101,6 @@ async function handleEvent(
     return new Response(rewritten, {
         status: 200,
         headers: {
-            ...Object.fromEntries(response.headers),
             'content-type': 'text/html; charset=utf-8',
             'cache-control': CACHE_HEADER,
             'x-seo-middleware': 'event',
@@ -96,37 +108,46 @@ async function handleEvent(
     })
 }
 
-export default async function middleware(request: Request): Promise<Response> {
+async function renderPrivate(requestUrl: string): Promise<Response> {
+    const html = await fetchStaticShell(requestUrl)
+    return new Response(html, {
+        status: 200,
+        headers: {
+            'content-type': 'text/html; charset=utf-8',
+            'x-robots-tag': 'noindex, nofollow',
+            'x-seo-middleware': 'private',
+        },
+    })
+}
+
+export default async function middleware(
+    request: Request,
+): Promise<Response> {
     const url = new URL(request.url)
     const path = url.pathname
 
     if (path === '/') {
-        const res = await next()
-        return handleHome(res)
+        return renderHome(request.url)
     }
 
     const eventMatch = path.match(/^\/event\/([^/]+)$/)
     if (eventMatch && eventMatch[1]) {
-        const res = await next()
-        return handleEvent(res, eventMatch[1])
+        return renderEvent(request.url, eventMatch[1])
     }
 
-    // Private / transactional routes: let the SPA render but stamp headers
-    // so crawlers never index them (belt-and-braces with the Disallow rules
-    // in robots.txt and the in-app useSeoMeta robots meta).
+    // Private / transactional routes: serve the SPA shell but stamp
+    // X-Robots-Tag so crawlers never index them.
     if (
         /^\/event\/[^/]+\/tickets(\/success)?$/.test(path) ||
         /^\/tickets\/order\//.test(path)
     ) {
-        const res = await next()
-        const headers = new Headers(res.headers)
-        headers.set('x-robots-tag', 'noindex, nofollow')
-        headers.set('x-seo-middleware', 'private')
-        return new Response(res.body, {
-            status: res.status,
-            headers,
-        })
+        return renderPrivate(request.url)
     }
 
-    return next()
+    // Fallback (shouldn't hit given the matcher).
+    const html = await fetchStaticShell(request.url)
+    return new Response(html, {
+        status: 200,
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+    })
 }
