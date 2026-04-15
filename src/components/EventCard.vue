@@ -121,20 +121,6 @@ function formatCompactDate(dateStr: string): string {
 </template>
 
 <style scoped>
-@font-face {
-    font-family: 'Matter-Heavy';
-    src: url('/fonts/Matter-Heavy.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Matter-SemiBold';
-    src: url('/fonts/Matter-SemiBold.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
-
 .events {
     width: 100%;
     display: flex;
