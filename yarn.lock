@@ -931,6 +931,40 @@
   dependencies:
     "@types/node" "*"
 
+"@unhead/dom@1.11.20":
+  version "1.11.20"
+  resolved "https://pkgs.dev.azure.com/basenetch/_packaging/Finance/npm/registry/@unhead/dom/-/dom-1.11.20.tgz#b777f439e1c5f80ebcceb89aa45c45e877013c62"
+  integrity sha1-t3f0OeHF+A68zriapFxF6HcBPGI=
+  dependencies:
+    "@unhead/schema" "1.11.20"
+    "@unhead/shared" "1.11.20"
+
+"@unhead/schema@1.11.20":
+  version "1.11.20"
+  resolved "https://pkgs.dev.azure.com/basenetch/_packaging/Finance/npm/registry/@unhead/schema/-/schema-1.11.20.tgz#e4341832a203b990380df906391e9039501257fa"
+  integrity sha1-5DQYMqIDuZA4DfkGOR6QOVASV/o=
+  dependencies:
+    hookable "^5.5.3"
+    zhead "^2.2.4"
+
+"@unhead/shared@1.11.20":
+  version "1.11.20"
+  resolved "https://pkgs.dev.azure.com/basenetch/_packaging/Finance/npm/registry/@unhead/shared/-/shared-1.11.20.tgz#593926bff62d88cda9a19b9d41d2bcdb3ed08da4"
+  integrity sha1-WTkmv/YtiM2poZudQdK82z7QjaQ=
+  dependencies:
+    "@unhead/schema" "1.11.20"
+    packrup "^0.1.2"
+
+"@unhead/vue@^1.11.0":
+  version "1.11.20"
+  resolved "https://pkgs.dev.azure.com/basenetch/_packaging/Finance/npm/registry/@unhead/vue/-/vue-1.11.20.tgz#609513751abfd2d20426d2e97337f3a76fbb8b12"
+  integrity sha1-YJUTdRq/0tIEJtLpczfzp2+7ixI=
+  dependencies:
+    "@unhead/schema" "1.11.20"
+    "@unhead/shared" "1.11.20"
+    hookable "^5.5.3"
+    unhead "1.11.20"
+
 "@vitejs/plugin-vue@^6.0.4":
   version "6.0.4"
   resolved "https://registry.yarnpkg.com/@vitejs/plugin-vue/-/plugin-vue-6.0.4.tgz#f571fe5aeb0be511e3bfdd43844d8eaa0738b28e"
@@ -2080,6 +2114,11 @@ p-try@^2.0.0:
   resolved "https://registry.yarnpkg.com/p-try/-/p-try-2.2.0.tgz#cb2868540e313d61de58fafbe35ce9004d5540e6"
   integrity sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==
 
+packrup@^0.1.2:
+  version "0.1.2"
+  resolved "https://pkgs.dev.azure.com/basenetch/_packaging/Finance/npm/registry/packrup/-/packrup-0.1.2.tgz#7e6c50e5b79a1e68cd717e79fd06d40abb8f1583"
+  integrity sha1-fmxQ5beaHmjNcX55/QbUCruPFYM=
+
 parse5@^7.1.2:
   version "7.3.0"
   resolved "https://pkgs.dev.azure.com/basenetch/_packaging/Finance/npm/registry/parse5/-/parse5-7.3.0.tgz#d7e224fa72399c7a175099f45fc2ad024b05ec05"
@@ -2503,6 +2542,16 @@ undici-types@~7.18.0:
   resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-7.18.2.tgz#29357a89e7b7ca4aef3bf0fd3fd0cd73884229e9"
   integrity sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==
 
+unhead@1.11.20:
+  version "1.11.20"
+  resolved "https://pkgs.dev.azure.com/basenetch/_packaging/Finance/npm/registry/unhead/-/unhead-1.11.20.tgz#910af0ddaac0bca24d32b4dbe0d6291cd813b9bc"
+  integrity sha1-kQrw3arAvKJNMrTb4NYpHNgTubw=
+  dependencies:
+    "@unhead/dom" "1.11.20"
+    "@unhead/schema" "1.11.20"
+    "@unhead/shared" "1.11.20"
+    hookable "^5.5.3"
+
 unplugin-utils@^0.3.0, unplugin-utils@^0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/unplugin-utils/-/unplugin-utils-0.3.1.tgz#ef2873670a6a2a21bd2c9d31307257cc863a709c"
@@ -2831,3 +2880,8 @@ yargs@^15.3.1:
     which-module "^2.0.0"
     y18n "^4.0.0"
     yargs-parser "^18.1.2"
+
+zhead@^2.2.4:
+  version "2.2.4"
+  resolved "https://pkgs.dev.azure.com/basenetch/_packaging/Finance/npm/registry/zhead/-/zhead-2.2.4.tgz#87cd1e2c3d2f465fa9f43b8db23f9716dfe6bed7"
+  integrity sha1-h80eLD0vRl+p9DuNsj+XFt/mvtc=
