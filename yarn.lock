@@ -965,6 +965,11 @@
     hookable "^5.5.3"
     unhead "1.11.20"
 
+"@vercel/edge@^1.2.0":
+  version "1.2.2"
+  resolved "https://pkgs.dev.azure.com/basenetch/_packaging/Finance/npm/registry/@vercel/edge/-/edge-1.2.2.tgz#22647e3333399c9d3e35fbfd49a99d3bfc6ffc5c"
+  integrity sha1-ImR+MzM5nJ0+Nfv9SamdO/xv/Fw=
+
 "@vitejs/plugin-vue@^6.0.4":
   version "6.0.4"
   resolved "https://registry.yarnpkg.com/@vitejs/plugin-vue/-/plugin-vue-6.0.4.tgz#f571fe5aeb0be511e3bfdd43844d8eaa0738b28e"

@@ -15,6 +15,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",
     "@unhead/vue": "^1.11.0",
+    "@vercel/edge": "^1.2.0",
     "qrcode": "^1.5.4",
     "vue": "^3.5.28",
     "vue-router": "^5.0.4"
