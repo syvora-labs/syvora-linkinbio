@@ -2,7 +2,7 @@ import { SITE_ORIGIN } from './types'
 
 export function extractCity(location: string): string {
     if (!location) return ''
-    const [first] = location.split(',')
+    const [first = ''] = location.split(',')
     return first.trim()
 }
 
