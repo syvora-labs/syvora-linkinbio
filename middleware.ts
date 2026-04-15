@@ -11,6 +11,7 @@ import {
     fetchEventById,
     fetchUpcomingEvents,
 } from './src/lib/seo/edge-supabase'
+import type { SeoEvent } from './src/lib/seo/types'
 
 export const config = {
     matcher: [
@@ -41,7 +42,7 @@ function stripDefaultMeta(html: string): string {
 
 async function handleHome(response: Response): Promise<Response> {
     const html = await response.text()
-    let events
+    let events: SeoEvent[]
     try {
         events = await fetchUpcomingEvents(10)
     } catch {
@@ -66,7 +67,7 @@ async function handleEvent(
     response: Response,
     eventId: string,
 ): Promise<Response> {
-    let event
+    let event: SeoEvent | null
     try {
         event = await fetchEventById(eventId)
     } catch {
@@ -105,7 +106,7 @@ export default async function middleware(request: Request): Promise<Response> {
     }
 
     const eventMatch = path.match(/^\/event\/([^/]+)$/)
-    if (eventMatch) {
+    if (eventMatch && eventMatch[1]) {
         const res = await next()
         return handleEvent(res, eventMatch[1])
     }
