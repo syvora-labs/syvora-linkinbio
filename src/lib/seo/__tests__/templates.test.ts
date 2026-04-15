@@ -67,3 +67,66 @@ describe('buildEventMeta', () => {
         expect(meta.title.length).toBeLessThanOrEqual(60)
     })
 })
+
+import {
+    buildMusicGroupJsonLd,
+    buildEventJsonLd,
+    buildBreadcrumbJsonLd,
+} from '@/lib/seo/templates'
+
+describe('buildMusicGroupJsonLd', () => {
+    it('emits a MusicGroup node with sameAs socials', () => {
+        const ld = buildMusicGroupJsonLd([])
+        expect(ld['@type']).toBe('MusicGroup')
+        expect(ld.name).toBe('ECLIPSE BOUNDARIES')
+        expect(Array.isArray(ld.sameAs)).toBe(true)
+        expect((ld.sameAs as string[]).some((u) => u.includes('instagram'))).toBe(true)
+    })
+
+    it('embeds an event list from provided events', () => {
+        const ld = buildMusicGroupJsonLd([sampleEvent])
+        const list = ld.event as unknown[]
+        expect(list).toHaveLength(1)
+    })
+})
+
+describe('buildEventJsonLd', () => {
+    it('emits Event with startDate, location, organizer, offers', () => {
+        const ld = buildEventJsonLd(sampleEvent)
+        expect(ld['@type']).toBe('Event')
+        expect(ld.startDate).toBe(sampleEvent.event_date)
+        expect((ld.location as Record<string, unknown>)['@type']).toBe('Place')
+        expect((ld.organizer as Record<string, unknown>).name).toBe(
+            'ECLIPSE BOUNDARIES',
+        )
+        expect((ld.offers as Record<string, unknown>)['@type']).toBe('Offer')
+    })
+
+    it('uses internal ticket URL when ticket_link is null', () => {
+        const ld = buildEventJsonLd(sampleEvent)
+        const offer = ld.offers as Record<string, unknown>
+        expect(offer.url).toBe(
+            'https://eclipseboundaries.ch/event/abc-123/tickets',
+        )
+    })
+
+    it('uses external ticket URL when ticket_link is set', () => {
+        const ld = buildEventJsonLd({
+            ...sampleEvent,
+            ticket_link: 'https://externalshop.com/x',
+        })
+        const offer = ld.offers as Record<string, unknown>
+        expect(offer.url).toBe('https://externalshop.com/x')
+    })
+})
+
+describe('buildBreadcrumbJsonLd', () => {
+    it('emits Home → Event breadcrumb', () => {
+        const ld = buildBreadcrumbJsonLd(sampleEvent)
+        expect(ld['@type']).toBe('BreadcrumbList')
+        const list = ld.itemListElement as Record<string, unknown>[]
+        expect(list).toHaveLength(2)
+        expect(list[0].name).toBe('Home')
+        expect(list[1].name).toBe(sampleEvent.title)
+    })
+})

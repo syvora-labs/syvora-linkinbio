@@ -8,6 +8,7 @@ import {
 import {
     SITE_NAME,
     SITE_ORIGIN,
+    type JsonLd,
     type MetaTag,
     type SeoEvent,
     type SeoMeta,
@@ -87,4 +88,87 @@ export function buildEventMeta(event: SeoEvent): SeoMeta {
     ]
 
     return { title, description, canonical, tags }
+}
+
+const SOCIAL_LINKS = [
+    'https://www.instagram.com/eclipse_boundaries/',
+    'https://www.youtube.com/@eclipse_boundaries',
+    'https://tiktok.com/@eclipse_boundaries',
+]
+
+const GENRES = ['Electronic', 'House', 'Drum and Bass']
+
+export function buildEventJsonLd(event: SeoEvent): JsonLd {
+    const city = extractCity(event.location) || event.location
+    const canonical = `${SITE_ORIGIN}/event/${event.id}`
+    const ticketUrl = event.ticket_link ?? `${canonical}/tickets`
+    const ogImage = absoluteUrl(event.artwork_url)
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'Event',
+        name: event.title,
+        startDate: event.event_date,
+        eventStatus: 'https://schema.org/EventScheduled',
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        location: {
+            '@type': 'Place',
+            name: event.location,
+            address: {
+                '@type': 'PostalAddress',
+                addressLocality: city,
+                addressCountry: 'CH',
+            },
+        },
+        image: [ogImage],
+        organizer: {
+            '@type': 'Organization',
+            name: SITE_NAME,
+            url: SITE_ORIGIN,
+        },
+        offers: {
+            '@type': 'Offer',
+            url: ticketUrl,
+            availability: 'https://schema.org/InStock',
+            validFrom: new Date().toISOString(),
+        },
+        url: canonical,
+    }
+}
+
+export function buildMusicGroupJsonLd(events: SeoEvent[]): JsonLd {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'MusicGroup',
+        name: SITE_NAME,
+        url: SITE_ORIGIN,
+        genre: GENRES,
+        sameAs: SOCIAL_LINKS,
+        event: events.map((e) => {
+            const ld = buildEventJsonLd(e) as Record<string, unknown>
+            // strip redundant @context inside nested items
+            const { ['@context']: _ctx, ...rest } = ld
+            return rest
+        }),
+    }
+}
+
+export function buildBreadcrumbJsonLd(event: SeoEvent): JsonLd {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: `${SITE_ORIGIN}/`,
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: event.title,
+                item: `${SITE_ORIGIN}/event/${event.id}`,
+            },
+        ],
+    }
 }
