@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import {ref, onMounted} from 'vue'
+import { ref, onMounted } from 'vue'
+import { useSeoMeta, useHead } from '@unhead/vue'
 import EventCard from '@/components/EventCard.vue'
 import RadioList from '@/components/RadioList.vue'
+import { buildHomeMeta, buildMusicGroupJsonLd } from '@/lib/seo/templates'
 
 interface Link {
     title: string
@@ -18,15 +20,47 @@ onMounted(async () => {
         console.error('Error loading links:', error)
     }
 })
+
+const homeMeta = buildHomeMeta()
+
+useSeoMeta({
+    title: homeMeta.title,
+    description: homeMeta.description,
+    ogType: 'website',
+    ogSiteName: 'ECLIPSE BOUNDARIES',
+    ogTitle: 'ECLIPSE BOUNDARIES',
+    ogDescription: 'Electronic events in Lucerne & Switzerland.',
+    ogUrl: homeMeta.canonical,
+    ogImage: 'https://eclipseboundaries.ch/og-default.jpg',
+    ogLocale: 'en_US',
+    twitterCard: 'summary_large_image',
+    twitterTitle: 'ECLIPSE BOUNDARIES',
+    twitterDescription: 'Electronic events in Lucerne & Switzerland.',
+    twitterImage: 'https://eclipseboundaries.ch/og-default.jpg',
+})
+
+useHead({
+    link: [{ rel: 'canonical', href: homeMeta.canonical }],
+    script: [
+        {
+            type: 'application/ld+json',
+            // Client-side homepage JSON-LD is the lightweight brand-only form.
+            // The richer ItemList of events is injected by the Edge middleware.
+            innerHTML: JSON.stringify(buildMusicGroupJsonLd([])),
+        },
+    ],
+})
 </script>
 
 <template>
-    <div class="container">
-        <h1 class="title">ECLIPSE BOUNDARIES</h1>
+    <main class="container">
+        <header>
+            <h1 class="title">ECLIPSE BOUNDARIES</h1>
+        </header>
 
         <EventCard />
 
-        <div class="links-section">
+        <nav aria-label="External links" class="links-section">
             <a
                 v-for="link in links"
                 :key="link.link"
@@ -37,11 +71,11 @@ onMounted(async () => {
             >
                 {{ link.title }}
             </a>
-        </div>
+        </nav>
 
         <RadioList />
 
-        <div class="social-section">
+        <nav aria-label="Social media" class="social-section">
             <a
                 href="https://www.youtube.com/@eclipse_boundaries"
                 target="_blank"
@@ -66,8 +100,8 @@ onMounted(async () => {
             >
                 TikTok
             </a>
-        </div>
-    </div>
+        </nav>
+    </main>
 </template>
 
 <style scoped>
