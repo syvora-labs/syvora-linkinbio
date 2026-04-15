@@ -5,7 +5,7 @@ import {supabase} from '@/supabase'
 interface Event {
     id: string
     title: string
-    artwork_url: string
+    artwork_url: string | null
     location: string
     event_date: string
     ticket_link: string | null
@@ -63,6 +63,7 @@ function formatCompactDate(dateStr: string): string {
                 class="event-card-link"
             >
                 <img
+                    v-if="featured.artwork_url"
                     :src="featured.artwork_url"
                     :alt="`${featured.title} event artwork — ${formatCompactDate(featured.event_date)} at ${featured.location}`"
                     class="event-cover"
@@ -89,6 +90,7 @@ function formatCompactDate(dateStr: string): string {
                 class="upcoming-row"
             >
                 <img
+                    v-if="event.artwork_url"
                     :src="event.artwork_url"
                     :alt="`${event.title} — ${formatCompactDate(event.event_date)} at ${event.location}`"
                     class="upcoming-thumb"

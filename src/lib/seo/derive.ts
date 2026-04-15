@@ -46,7 +46,17 @@ export function formatEventDateShort(iso: string): string {
     })
 }
 
-export function absoluteUrl(pathOrUrl: string): string {
+/**
+ * Resolve a path or URL to an absolute URL on the site origin.
+ * Returns null for null/undefined/empty input so callers can apply a
+ * fallback (e.g., a default OG image) instead of crashing on missing data.
+ */
+export function absoluteUrl(
+    pathOrUrl: string | null | undefined,
+): string | null {
+    if (pathOrUrl === null || pathOrUrl === undefined || pathOrUrl === '') {
+        return null
+    }
     if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl
     if (pathOrUrl.startsWith('/')) return SITE_ORIGIN + pathOrUrl
     return `${SITE_ORIGIN}/${pathOrUrl}`

@@ -127,6 +127,7 @@ function onBuyTickets() {
         </div>
         <article v-else-if="event" class="event-card">
             <img
+                v-if="event.artwork_url"
                 :src="event.artwork_url"
                 :alt="`${event.title} event artwork — ${event.location}`"
                 class="event-cover"

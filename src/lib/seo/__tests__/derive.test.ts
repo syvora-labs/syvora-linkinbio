@@ -68,4 +68,10 @@ describe('absoluteUrl', () => {
   it('leaves absolute URLs untouched', () => {
     expect(absoluteUrl('https://example.com/x')).toBe('https://example.com/x')
   })
+
+  it('returns null for null, undefined, or empty input', () => {
+    expect(absoluteUrl(null)).toBeNull()
+    expect(absoluteUrl(undefined)).toBeNull()
+    expect(absoluteUrl('')).toBeNull()
+  })
 })

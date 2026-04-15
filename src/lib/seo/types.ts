@@ -1,7 +1,12 @@
 export interface SeoEvent {
     id: string
     title: string
-    artwork_url: string
+    /**
+     * Promo artwork URL. May be null for events with no external promo
+     * (typically internally-managed ticket sales) — consumers must fall
+     * back to a default image.
+     */
+    artwork_url: string | null
     location: string
     event_date: string // ISO 8601
     ticket_link: string | null

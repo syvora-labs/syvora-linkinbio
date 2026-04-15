@@ -55,7 +55,10 @@ export function buildEventMeta(event: SeoEvent): SeoMeta {
     const dateShort = formatEventDateShort(event.event_date)
     const dateLong = formatEventDateLong(event.event_date)
     const canonical = `${SITE_ORIGIN}/event/${event.id}`
-    const ogImage = absoluteUrl(event.artwork_url)
+    // Fall back to the homepage default OG image when an event has no
+    // promo artwork (typically internally-managed events). Crawlers and
+    // social previewers always need *some* image.
+    const ogImage = absoluteUrl(event.artwork_url) ?? HOME_OG_IMAGE
 
     const titleSuffix = ` — ${city}, ${dateShort} | ${SITE_NAME}`
     const maxEventTitle = MAX_TITLE - titleSuffix.length
@@ -102,7 +105,9 @@ export function buildEventJsonLd(event: SeoEvent): JsonLd {
     const city = extractCity(event.location) || event.location
     const canonical = `${SITE_ORIGIN}/event/${event.id}`
     const ticketUrl = event.ticket_link ?? `${canonical}/tickets`
-    const ogImage = absoluteUrl(event.artwork_url)
+    // Same fallback logic as buildEventMeta: schema.org Event recommends
+    // an image for rich results, so always emit one.
+    const ogImage = absoluteUrl(event.artwork_url) ?? HOME_OG_IMAGE
     return {
         '@context': 'https://schema.org',
         '@type': 'Event',

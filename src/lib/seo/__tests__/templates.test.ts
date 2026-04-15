@@ -66,6 +66,15 @@ describe('buildEventMeta', () => {
         const meta = buildEventMeta(longLocationEvent)
         expect(meta.title.length).toBeLessThanOrEqual(60)
     })
+
+    it('falls back to default OG image when artwork_url is null', () => {
+        const noArtwork: SeoEvent = { ...sampleEvent, artwork_url: null }
+        const meta = buildEventMeta(noArtwork)
+        const ogImage = meta.tags.find(
+            (t) => t.keyAttr === 'property' && t.key === 'og:image',
+        )
+        expect(ogImage?.content).toBe('https://eclipseboundaries.ch/og-default.jpg')
+    })
 })
 
 import {
@@ -117,6 +126,12 @@ describe('buildEventJsonLd', () => {
         })
         const offer = ld.offers as Record<string, unknown>
         expect(offer.url).toBe('https://externalshop.com/x')
+    })
+
+    it('falls back to default OG image when artwork_url is null', () => {
+        const ld = buildEventJsonLd({ ...sampleEvent, artwork_url: null })
+        const images = ld.image as string[]
+        expect(images).toEqual(['https://eclipseboundaries.ch/og-default.jpg'])
     })
 })
 
