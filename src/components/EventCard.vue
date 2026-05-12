@@ -154,7 +154,7 @@ function formatCompactDate(dateStr: string): string {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
 }
 
 .event-cover {
@@ -219,7 +219,7 @@ function formatCompactDate(dateStr: string): string {
     text-transform: uppercase;
     color: white;
     margin: 4px 0 2px;
-    text-shadow: 0 2px 4px rgba(115, 195, 254, 0.3);
+    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
 }
 
 .upcoming-row {
@@ -231,12 +231,12 @@ function formatCompactDate(dateStr: string): string {
     border-radius: 10px;
     text-decoration: none;
     color: #1a1a1a;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
     transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .upcoming-row:hover {
-    box-shadow: 0 6px 20px rgba(115, 195, 254, 0.4);
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
     transform: translateX(2px);
 }
 

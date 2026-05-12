@@ -78,7 +78,7 @@ async function sendConfirmationEmail(
         <table width="500" cellpadding="0" cellspacing="0" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #73c3fe, #a8d8ea); padding: 32px 24px; text-align: center;">
+            <td style="background: linear-gradient(135deg, #6C5CE7, #9684E8); padding: 32px 24px; text-align: center;">
               <h1 style="margin: 0; font-family: sans-serif; font-size: 20px; font-weight: 800; color: white; letter-spacing: 3px; text-transform: uppercase;">ECLIPSE BOUNDARIES</h1>
             </td>
           </tr>

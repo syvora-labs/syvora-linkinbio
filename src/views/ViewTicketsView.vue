@@ -195,7 +195,7 @@ onMounted(async () => {
     color: white;
     text-decoration: none;
     text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(115, 195, 254, 0.3);
+    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
     transition: opacity 0.3s ease;
 }
 
@@ -209,7 +209,7 @@ onMounted(async () => {
     border-radius: 12px;
     padding: 32px 24px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
 }
 
 .status-text {
@@ -240,7 +240,7 @@ onMounted(async () => {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
 }
 
 .event-cover {
@@ -277,7 +277,7 @@ onMounted(async () => {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     padding: 16px 24px;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
 }
 
 .order-row {
@@ -310,7 +310,7 @@ onMounted(async () => {
     color: white;
     margin: 0;
     letter-spacing: 2px;
-    text-shadow: 0 2px 4px rgba(115, 195, 254, 0.3);
+    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
 }
 
 .ticket-card {
@@ -318,7 +318,7 @@ onMounted(async () => {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     padding: 20px 24px;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
     display: flex;
     flex-direction: column;
     align-items: center;

@@ -172,7 +172,7 @@ function onBuyTickets() {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
 }
 
 .event-cover {

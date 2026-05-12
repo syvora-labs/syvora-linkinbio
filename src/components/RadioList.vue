@@ -72,7 +72,7 @@ onMounted(async () => {
     color: white;
     margin: 0;
     letter-spacing: 2px;
-    text-shadow: 0 2px 4px rgba(115, 195, 254, 0.3);
+    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
 }
 
 .radio-card {
@@ -85,12 +85,12 @@ onMounted(async () => {
     text-decoration: none;
     color: #1a1a1a;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
     cursor: pointer;
 }
 
 .radio-card:hover {
-    box-shadow: 0 6px 20px rgba(115, 195, 254, 0.4);
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
 }
 
 .radio-card.no-link {

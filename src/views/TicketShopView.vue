@@ -441,7 +441,7 @@ async function handleCheckout() {
     color: white;
     text-decoration: none;
     text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(115, 195, 254, 0.3);
+    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
     transition: opacity 0.3s ease;
 }
 
@@ -457,7 +457,7 @@ async function handleCheckout() {
     border-radius: 12px;
     padding: 32px 24px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
 }
 
 .loading-text,
@@ -490,7 +490,7 @@ async function handleCheckout() {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
 }
 
 .event-cover {
@@ -537,7 +537,7 @@ async function handleCheckout() {
     color: white;
     margin: 0;
     letter-spacing: 2px;
-    text-shadow: 0 2px 4px rgba(115, 195, 254, 0.3);
+    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
 }
 
 .phase-card {
@@ -545,7 +545,7 @@ async function handleCheckout() {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     padding: 20px 24px;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -680,7 +680,7 @@ async function handleCheckout() {
     font-family: 'Matter-Regular', sans-serif;
     font-size: 1rem;
     color: #1a1a1a;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
     outline: none;
     transition: box-shadow 0.3s ease;
 }
@@ -690,11 +690,11 @@ async function handleCheckout() {
 }
 
 .form-input:focus {
-    box-shadow: 0 4px 20px rgba(115, 195, 254, 0.4);
+    box-shadow: 0 4px 20px rgba(108, 92, 231, 0.4);
 }
 
 .form-input.input-error {
-    box-shadow: 0 0 0 2px #e74c3c, 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 0 0 2px #e74c3c, 0 4px 15px rgba(108, 92, 231, 0.2);
 }
 
 .field-error {
@@ -728,7 +728,7 @@ async function handleCheckout() {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     padding: 16px 24px;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
     display: flex;
     flex-direction: column;
     gap: 8px;

@@ -139,7 +139,7 @@ function formatEventDate(dateStr: string): string {
     color: white;
     text-decoration: none;
     text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(115, 195, 254, 0.3);
+    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
     transition: opacity 0.3s ease;
 }
 
@@ -153,7 +153,7 @@ function formatEventDate(dateStr: string): string {
     border-radius: 12px;
     padding: 40px 24px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
     display: flex;
     flex-direction: column;
     align-items: center;

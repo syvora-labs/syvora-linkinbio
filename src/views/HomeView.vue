@@ -124,7 +124,7 @@ useHead({
     color: white;
     margin: 0;
     text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(115, 195, 254, 0.3);
+    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
 }
 
 .links-section {
@@ -146,12 +146,12 @@ useHead({
     font-weight: 600;
     text-align: left;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(115, 195, 254, 0.2);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
     cursor: pointer;
 }
 
 .link-button:hover {
-    box-shadow: 0 6px 20px rgba(115, 195, 254, 0.4);
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
 }
 
 .social-section {

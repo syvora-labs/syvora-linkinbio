@@ -144,12 +144,12 @@ The visual identity is controlled through CSS in `src/App.vue`:
 
 | Element             | Property                     | Default                       |
 |---------------------|------------------------------|-------------------------------|
-| Background gradient | `linear-gradient` colors     | `white` to `#73c3fe`         |
+| Background gradient | `linear-gradient` colors     | `white` to `#6C5CE7`         |
 | Animation speed     | `animation` duration         | `12s`                         |
 | Title font          | `font-family`                | `Matter-Heavy`                |
 | Button font         | `font-family`                | `Matter-SemiBold`             |
 | Button background   | `background`                 | `rgba(255, 255, 255, 0.95)`  |
-| Button shadow       | `box-shadow` color           | `rgba(115, 195, 254, 0.2)`   |
+| Button shadow       | `box-shadow` color           | `rgba(108, 92, 231, 0.2)`    |
 
 ## 🌍 Deployment
 
