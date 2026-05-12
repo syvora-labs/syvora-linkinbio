@@ -114,6 +114,7 @@ function onBuyTickets() {
     router.push({
         name: 'ticket-shop',
         params: { eventId: event.value.id },
+        query: route.query.unlock ? { unlock: route.query.unlock } : undefined,
     })
 }
 </script>
