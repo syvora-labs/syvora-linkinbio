@@ -23,6 +23,7 @@ interface TicketPhase {
     remaining: number
     sale_start: string | null
     sale_end: string | null
+    is_private?: boolean
 }
 
 interface PhaseSelection {
@@ -32,6 +33,13 @@ interface PhaseSelection {
 
 const route = useRoute()
 const eventId = route.params.eventId as string
+
+const rawUnlock = route.query.unlock
+const unlockTokens: string[] = Array.isArray(rawUnlock)
+    ? rawUnlock.filter((t): t is string => typeof t === 'string' && t.length > 0)
+    : typeof rawUnlock === 'string' && rawUnlock.length > 0
+        ? [rawUnlock]
+        : []
 
 useSeoMeta({
     title: 'Tickets | ECLIPSE BOUNDARIES',
@@ -162,7 +170,7 @@ onMounted(async () => {
         // Fetch ticket phases via edge function
         const {data: fnData, error: fnError} = await supabase.functions.invoke(
             'get-ticket-phases',
-            {body: {event_id: eventId}},
+            {body: {event_id: eventId, unlock_tokens: unlockTokens}},
         )
 
         if (fnError) {
@@ -264,6 +272,7 @@ async function handleCheckout() {
                         :class="{'sold-out': phase.remaining <= 0}"
                     >
                         <div class="phase-header">
+                            <span v-if="phase.is_private" class="phase-badge">Private offer</span>
                             <div class="phase-name-price">
                                 <span class="phase-name">{{ phase.name }}</span>
                                 <span class="phase-price">{{ formatPrice(phase.price_cents) }}</span>
@@ -578,6 +587,19 @@ async function handleCheckout() {
     font-size: 0.85rem;
     color: #777;
     margin: 4px 0 0;
+}
+
+.phase-badge {
+    display: inline-block;
+    font-family: 'Matter-Heavy', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    color: #1a1a1a;
+    border: 1px solid #1a1a1a;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
 }
 
 .phase-availability {

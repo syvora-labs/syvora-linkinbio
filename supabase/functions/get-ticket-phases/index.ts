@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { event_id } = await req.json()
+    const { event_id, unlock_tokens } = await req.json()
 
     if (!event_id) {
       return new Response(
@@ -20,19 +20,25 @@ Deno.serve(async (req) => {
       )
     }
 
+    const tokens: string[] = Array.isArray(unlock_tokens)
+      ? unlock_tokens.filter((t): t is string => typeof t === 'string' && t.length > 0)
+      : []
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
     const now = new Date().toISOString()
+    const phaseColumns = 'id, name, description, price_cents, currency, quantity, sale_start, sale_end, is_private, sort_order'
 
-    // Fetch active phases for this event that are within their sale window
-    const { data: phases, error } = await supabase
+    // Default list: active, non-private phases for this event
+    const { data: defaultPhases, error } = await supabase
       .from('ticket_phases')
-      .select('id, name, description, price_cents, currency, quantity, sale_start, sale_end')
+      .select(phaseColumns)
       .eq('event_id', event_id)
       .eq('is_active', true)
+      .eq('is_private', false)
       .order('sort_order', { ascending: true })
 
     if (error) {
@@ -42,10 +48,30 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Token-unlocked phases: scoped to this event, active, matched by access_token.
+    // Invalid tokens silently produce no rows. Public phases unlocked via token
+    // are deduped against the default list below.
+    let unlockedPhases: typeof defaultPhases = []
+    if (tokens.length > 0) {
+      const { data } = await supabase
+        .from('ticket_phases')
+        .select(phaseColumns)
+        .eq('event_id', event_id)
+        .eq('is_active', true)
+        .in('access_token', tokens)
+      unlockedPhases = data ?? []
+    }
+
+    const byId = new Map<string, NonNullable<typeof defaultPhases>[number]>()
+    for (const p of [...(defaultPhases ?? []), ...unlockedPhases]) {
+      byId.set(p.id, p)
+    }
+    const mergedPhases = [...byId.values()].sort((a, b) => a.sort_order - b.sort_order)
+
     // Filter by sale window and enrich with sold count
     const enrichedPhases = []
 
-    for (const phase of phases ?? []) {
+    for (const phase of mergedPhases) {
       // Check sale window
       if (phase.sale_start && new Date(phase.sale_start) > new Date(now)) continue
       if (phase.sale_end && new Date(phase.sale_end) < new Date(now)) continue
@@ -69,6 +95,7 @@ Deno.serve(async (req) => {
         remaining,
         sale_start: phase.sale_start,
         sale_end: phase.sale_end,
+        is_private: phase.is_private,
       })
     }
 
