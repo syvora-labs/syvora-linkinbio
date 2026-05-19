@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import {ref, computed, onMounted} from 'vue'
+import {ref, computed, onMounted, nextTick, watch} from 'vue'
 import {useRoute} from 'vue-router'
 import {useSeoMeta, useHead} from '@unhead/vue'
 import {supabase} from '@/supabase'
+import {COUNTRIES} from '@/data/countries'
 
 interface Event {
     id: string
@@ -69,6 +70,95 @@ const buyerBirthdate = ref('')
 const buyerCountry = ref('')
 const buyerZipcode = ref('')
 const buyerCity = ref('')
+
+const countryQuery = ref('')
+const countryOpen = ref(false)
+const countryHighlight = ref(0)
+const countryListEl = ref<HTMLDivElement | null>(null)
+
+const filteredCountries = computed(() => {
+    const q = countryQuery.value.trim().toLowerCase()
+    if (!q) return COUNTRIES
+    const starts: string[] = []
+    const contains: string[] = []
+    for (const c of COUNTRIES) {
+        const lc = c.toLowerCase()
+        if (lc.startsWith(q)) starts.push(c)
+        else if (lc.includes(q)) contains.push(c)
+    }
+    return [...starts, ...contains]
+})
+
+watch(filteredCountries, () => {
+    countryHighlight.value = 0
+})
+
+function openCountryDropdown() {
+    countryOpen.value = true
+    countryHighlight.value = 0
+}
+
+function selectCountry(name: string) {
+    buyerCountry.value = name
+    countryQuery.value = name
+    countryOpen.value = false
+}
+
+function onCountryInput(e: InputEvent) {
+    const value = (e.target as HTMLInputElement).value
+    countryQuery.value = value
+    buyerCountry.value = ''
+    countryOpen.value = true
+}
+
+function onCountryBlur() {
+    setTimeout(() => {
+        countryOpen.value = false
+        const exact = COUNTRIES.find(c => c.toLowerCase() === countryQuery.value.trim().toLowerCase())
+        if (exact) {
+            buyerCountry.value = exact
+            countryQuery.value = exact
+        } else if (!buyerCountry.value) {
+            countryQuery.value = ''
+        }
+    }, 150)
+}
+
+function onCountryKeydown(e: KeyboardEvent) {
+    if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        if (!countryOpen.value) {
+            countryOpen.value = true
+            return
+        }
+        const max = filteredCountries.value.length - 1
+        countryHighlight.value = Math.min(max, countryHighlight.value + 1)
+        scrollHighlightedIntoView()
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        countryHighlight.value = Math.max(0, countryHighlight.value - 1)
+        scrollHighlightedIntoView()
+    } else if (e.key === 'Enter') {
+        if (countryOpen.value) {
+            const choice = filteredCountries.value[countryHighlight.value]
+            if (choice) {
+                e.preventDefault()
+                selectCountry(choice)
+            }
+        }
+    } else if (e.key === 'Escape') {
+        countryOpen.value = false
+    }
+}
+
+function scrollHighlightedIntoView() {
+    nextTick(() => {
+        const list = countryListEl.value
+        if (!list) return
+        const item = list.children[countryHighlight.value] as HTMLElement | undefined
+        item?.scrollIntoView({block: 'nearest'})
+    })
+}
 
 const SERVICE_FEE_CENTS = 150
 
@@ -332,13 +422,41 @@ async function handleCheckout() {
                             :class="{'placeholder-visible': !buyerBirthdate}"
                         />
                     </div>
-                    <div class="form-group">
+                    <div class="form-group country-group">
                         <input
-                            v-model="buyerCountry"
+                            :value="countryQuery"
                             type="text"
                             placeholder="Country"
                             class="form-input"
+                            autocomplete="off"
+                            role="combobox"
+                            aria-autocomplete="list"
+                            :aria-expanded="countryOpen"
+                            @input="onCountryInput"
+                            @focus="openCountryDropdown"
+                            @blur="onCountryBlur"
+                            @keydown="onCountryKeydown"
                         />
+                        <div
+                            v-if="countryOpen && filteredCountries.length > 0"
+                            ref="countryListEl"
+                            class="country-dropdown"
+                            role="listbox"
+                        >
+                            <button
+                                v-for="(name, idx) in filteredCountries"
+                                :key="name"
+                                type="button"
+                                class="country-option"
+                                :class="{'highlighted': idx === countryHighlight}"
+                                role="option"
+                                :aria-selected="idx === countryHighlight"
+                                @mousedown.prevent="selectCountry(name)"
+                                @mouseenter="countryHighlight = idx"
+                            >
+                                {{ name }}
+                            </button>
+                        </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -710,6 +828,44 @@ async function handleCheckout() {
 
 .form-input.placeholder-visible {
     color: #999;
+}
+
+.country-group {
+    position: relative;
+}
+
+.country-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    max-height: 240px;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(108, 92, 231, 0.35);
+    padding: 4px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.country-option {
+    width: 100%;
+    text-align: left;
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    font-family: 'Matter-Regular', sans-serif;
+    font-size: 0.95rem;
+    color: #1a1a1a;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.country-option.highlighted,
+.country-option:hover {
+    background: rgba(108, 92, 231, 0.12);
 }
 
 .summary-heading {
