@@ -154,6 +154,44 @@ describe('buildEventJsonLd', () => {
         const images = ld.image as string[]
         expect(images).toEqual(['https://eclipseboundaries.ch/og-default.jpg'])
     })
+
+    it('emits description when event.description is present', () => {
+        const ld = buildEventJsonLd({
+            ...sampleEvent,
+            description: 'Immersive rooftop set with two live acts.',
+        })
+        expect(ld.description).toBe(
+            'Immersive rooftop set with two live acts.',
+        )
+    })
+
+    it('omits description when event.description is blank or absent', () => {
+        const ldA = buildEventJsonLd(sampleEvent)
+        expect('description' in ldA).toBe(false)
+        const ldB = buildEventJsonLd({ ...sampleEvent, description: '  ' })
+        expect('description' in ldB).toBe(false)
+    })
+
+    it('emits performer[] from lineup as PerformingGroup', () => {
+        const ld = buildEventJsonLd({
+            ...sampleEvent,
+            lineup: ['Artist One', 'Artist Two'],
+        })
+        const performers = ld.performer as Record<string, unknown>[]
+        expect(performers).toHaveLength(2)
+        expect(performers[0]).toEqual({
+            '@type': 'PerformingGroup',
+            name: 'Artist One',
+        })
+        expect(performers[1].name).toBe('Artist Two')
+    })
+
+    it('omits performer when lineup is empty or absent', () => {
+        const ldA = buildEventJsonLd(sampleEvent)
+        expect('performer' in ldA).toBe(false)
+        const ldB = buildEventJsonLd({ ...sampleEvent, lineup: [] })
+        expect('performer' in ldB).toBe(false)
+    })
 })
 
 describe('buildBreadcrumbJsonLd', () => {

@@ -84,7 +84,8 @@ export function buildEventJsonLd(event: SeoEvent): JsonLd {
     // Same fallback logic as buildEventMeta: schema.org Event recommends
     // an image for rich results, so always emit one.
     const ogImage = absoluteUrl(event.artwork_url) ?? HOME_OG_IMAGE;
-    return {
+
+    const ld: JsonLd = {
         "@context": "https://schema.org",
         "@type": "Event",
         name: event.title,
@@ -114,6 +115,20 @@ export function buildEventJsonLd(event: SeoEvent): JsonLd {
         },
         url: canonical,
     };
+
+    const editorial = event.description?.trim();
+    if (editorial) {
+        ld.description = editorial;
+    }
+
+    if (event.lineup && event.lineup.length > 0) {
+        ld.performer = event.lineup.map((name) => ({
+            "@type": "PerformingGroup",
+            name,
+        }));
+    }
+
+    return ld;
 }
 
 export function buildMusicGroupJsonLd(events: SeoEvent[]): JsonLd {
