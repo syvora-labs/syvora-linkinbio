@@ -8,7 +8,6 @@ interface Event {
     artwork_url: string | null
     location: string
     event_date: string
-    ticket_link: string | null
 }
 
 const events = ref<Event[]>([])
@@ -19,7 +18,7 @@ const upcoming = computed(() => events.value.slice(1))
 onMounted(async () => {
     const {data} = await supabase
         .from('events')
-        .select('id, title, artwork_url, location, event_date, ticket_link')
+        .select('id, title, artwork_url, location, event_date')
         .eq('is_draft', false)
         .eq('is_archived', false)
         .gte('event_date', new Date().toISOString())
