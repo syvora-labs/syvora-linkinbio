@@ -57,86 +57,52 @@ function formatCompactDate(dateStr: string): string {
 
 <template>
     <section v-if="featured" class="events" aria-labelledby="featured-event-heading">
-        <article class="event-card">
-            <img
-                v-if="featured.artwork_url"
-                :src="featured.artwork_url"
-                :alt="`${featured.title} event artwork — ${formatCompactDate(featured.event_date)} at ${featured.location}`"
-                class="event-cover"
-                fetchpriority="high"
-                loading="eager"
-            />
-            <div class="event-details">
-                <h2 id="featured-event-heading" class="event-title">
-                    {{ featured.title }}
-                </h2>
-                <p class="event-location">{{ featured.location }}</p>
-                <p class="event-date">{{ formatEventDate(featured.event_date) }}</p>
-                <a
-                    v-if="featured.ticket_link"
-                    :href="featured.ticket_link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="ticket-button"
-                >
-                    TICKETS
-                </a>
-                <router-link
-                    v-else
-                    :to="{ name: 'ticket-shop', params: { eventId: featured.id } }"
-                    class="ticket-button"
-                >
-                    TICKETS
-                </router-link>
-            </div>
-        </article>
+        <router-link
+            :to="{ name: 'event-detail', params: { eventId: featured.id } }"
+            class="event-card-link"
+        >
+            <article class="event-card">
+                <img
+                    v-if="featured.artwork_url"
+                    :src="featured.artwork_url"
+                    :alt="`${featured.title} event artwork — ${formatCompactDate(featured.event_date)} at ${featured.location}`"
+                    class="event-cover"
+                    fetchpriority="high"
+                    loading="eager"
+                />
+                <div class="event-details">
+                    <h2 id="featured-event-heading" class="event-title">
+                        {{ featured.title }}
+                    </h2>
+                    <p class="event-location">{{ featured.location }}</p>
+                    <p class="event-date">{{ formatEventDate(featured.event_date) }}</p>
+                </div>
+            </article>
+        </router-link>
 
         <section v-if="upcoming.length" class="upcoming-list" aria-labelledby="upcoming-heading">
             <h2 id="upcoming-heading" class="upcoming-heading">More upcoming shows</h2>
-            <template v-for="event in upcoming" :key="event.id">
-                <a
-                    v-if="event.ticket_link"
-                    :href="event.ticket_link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="upcoming-row"
-                >
-                    <img
-                        v-if="event.artwork_url"
-                        :src="event.artwork_url"
-                        :alt="`${event.title} — ${formatCompactDate(event.event_date)} at ${event.location}`"
-                        class="upcoming-thumb"
-                        loading="lazy"
-                    />
-                    <div class="upcoming-info">
-                        <p class="upcoming-title">{{ event.title }}</p>
-                        <p class="upcoming-meta">
-                            {{ formatCompactDate(event.event_date) }} · {{ event.location }}
-                        </p>
-                    </div>
-                    <span class="upcoming-chevron" aria-hidden="true">→</span>
-                </a>
-                <router-link
-                    v-else
-                    :to="{ name: 'ticket-shop', params: { eventId: event.id } }"
-                    class="upcoming-row"
-                >
-                    <img
-                        v-if="event.artwork_url"
-                        :src="event.artwork_url"
-                        :alt="`${event.title} — ${formatCompactDate(event.event_date)} at ${event.location}`"
-                        class="upcoming-thumb"
-                        loading="lazy"
-                    />
-                    <div class="upcoming-info">
-                        <p class="upcoming-title">{{ event.title }}</p>
-                        <p class="upcoming-meta">
-                            {{ formatCompactDate(event.event_date) }} · {{ event.location }}
-                        </p>
-                    </div>
-                    <span class="upcoming-chevron" aria-hidden="true">→</span>
-                </router-link>
-            </template>
+            <router-link
+                v-for="event in upcoming"
+                :key="event.id"
+                :to="{ name: 'event-detail', params: { eventId: event.id } }"
+                class="upcoming-row"
+            >
+                <img
+                    v-if="event.artwork_url"
+                    :src="event.artwork_url"
+                    :alt="`${event.title} — ${formatCompactDate(event.event_date)} at ${event.location}`"
+                    class="upcoming-thumb"
+                    loading="lazy"
+                />
+                <div class="upcoming-info">
+                    <p class="upcoming-title">{{ event.title }}</p>
+                    <p class="upcoming-meta">
+                        {{ formatCompactDate(event.event_date) }} · {{ event.location }}
+                    </p>
+                </div>
+                <span class="upcoming-chevron" aria-hidden="true">→</span>
+            </router-link>
         </section>
     </section>
 </template>
@@ -147,6 +113,18 @@ function formatCompactDate(dateStr: string): string {
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+.event-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+    border-radius: 12px;
+}
+
+.event-card-link:hover .event-card {
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
 }
 
 .event-card {
@@ -185,25 +163,6 @@ function formatCompactDate(dateStr: string): string {
     font-size: 0.95rem;
     color: #555;
     margin: 0;
-}
-
-.ticket-button {
-    display: block;
-    margin-top: 12px;
-    padding: 14px;
-    background: #1a1a1a;
-    border-radius: 8px;
-    text-decoration: none;
-    color: white;
-    font-family: 'Matter-SemiBold', sans-serif;
-    font-size: 1rem;
-    text-align: center;
-    transition: background 0.3s ease;
-    cursor: pointer;
-}
-
-.ticket-button:hover {
-    background: #333;
 }
 
 .upcoming-list {
@@ -290,10 +249,6 @@ function formatCompactDate(dateStr: string): string {
 
     .event-details {
         padding: 16px 20px 20px;
-    }
-
-    .ticket-button {
-        padding: 12px;
     }
 
     .upcoming-thumb {
