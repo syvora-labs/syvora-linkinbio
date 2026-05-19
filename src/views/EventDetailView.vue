@@ -12,6 +12,14 @@ import type { SeoEvent } from '@/lib/seo/types'
 
 interface EventRow extends SeoEvent {}
 
+function hasDescription(e: EventRow | null): boolean {
+    return !!e?.description && e.description.trim().length > 0
+}
+
+function hasLineup(e: EventRow | null): boolean {
+    return !!e?.lineup && e.lineup.length > 0
+}
+
 const route = useRoute()
 const router = useRouter()
 const eventId = route.params.eventId as string
@@ -27,7 +35,7 @@ const seo = computed(() =>
 onMounted(async () => {
     const { data, error } = await supabase
         .from('events')
-        .select('id, title, artwork_url, location, event_date, ticket_link')
+        .select('id, title, artwork_url, location, event_date, ticket_link, description, lineup')
         .eq('id', eventId)
         .eq('is_draft', false)
         .eq('is_archived', false)
@@ -142,11 +150,37 @@ function onBuyTickets() {
                 <button type="button" class="ticket-button" @click="onBuyTickets">
                     TICKETS
                 </button>
-                <router-link to="/" class="back-link">
-                    ← Back to home
-                </router-link>
             </div>
         </article>
+
+        <section
+            v-if="event && hasDescription(event)"
+            class="event-description-card"
+            aria-label="Event description"
+        >
+            <p class="event-description-text">{{ event.description }}</p>
+        </section>
+
+        <section
+            v-if="event && hasLineup(event)"
+            class="event-lineup"
+            aria-labelledby="lineup-heading"
+        >
+            <h2 id="lineup-heading" class="lineup-heading">LINEUP</h2>
+            <ul class="lineup-list">
+                <li
+                    v-for="artist in event.lineup ?? []"
+                    :key="artist"
+                    class="lineup-item"
+                >
+                    {{ artist }}
+                </li>
+            </ul>
+        </section>
+
+        <router-link v-if="event" to="/" class="back-link standalone-back">
+            ← Back to home
+        </router-link>
     </main>
 </template>
 
@@ -235,5 +269,63 @@ function onBuyTickets() {
 
 .back-link:hover {
     text-decoration: underline;
+}
+
+.event-description-card {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+}
+
+.event-description-text {
+    margin: 0;
+    font-family: 'Matter-Regular', sans-serif;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: #1a1a1a;
+    white-space: pre-wrap;
+}
+
+.event-lineup {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lineup-heading {
+    font-family: 'Matter-Heavy', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: white;
+    margin: 4px 0 2px;
+    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
+}
+
+.lineup-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.lineup-item {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-family: 'Matter-SemiBold', sans-serif;
+    font-size: 1rem;
+    color: #1a1a1a;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+}
+
+.standalone-back {
+    align-self: center;
+    margin-top: 4px;
 }
 </style>
