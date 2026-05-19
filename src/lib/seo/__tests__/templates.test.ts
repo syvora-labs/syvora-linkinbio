@@ -75,6 +75,27 @@ describe('buildEventMeta', () => {
         )
         expect(ogImage?.content).toBe('https://eclipseboundaries.ch/og-default.jpg')
     })
+
+    it('uses event description (truncated) when present', () => {
+        const eventWithDescription: SeoEvent = {
+            ...sampleEvent,
+            description:
+                'A night of immersive electronic music featuring two live acts and a closing DJ set on the rooftop terrace.',
+        }
+        const meta = buildEventMeta(eventWithDescription)
+        expect(meta.description).toContain('immersive electronic music')
+        expect(meta.description.length).toBeLessThanOrEqual(155)
+        const ogDescription = meta.tags.find(
+            (t) => t.keyAttr === 'property' && t.key === 'og:description',
+        )
+        expect(ogDescription?.content).toContain('immersive electronic music')
+    })
+
+    it('falls back to generated description when event description is empty', () => {
+        const blank: SeoEvent = { ...sampleEvent, description: '   ' }
+        const meta = buildEventMeta(blank)
+        expect(meta.description).toContain('Tickets available now')
+    })
 })
 
 import {
