@@ -169,8 +169,8 @@ function onBuyTickets() {
             <h2 id="lineup-heading" class="lineup-heading">LINEUP</h2>
             <ul class="lineup-list">
                 <li
-                    v-for="artist in event.lineup ?? []"
-                    :key="artist"
+                    v-for="(artist, idx) in event.lineup ?? []"
+                    :key="`${idx}-${artist}`"
                     class="lineup-item"
                 >
                     {{ artist }}
@@ -286,6 +286,7 @@ function onBuyTickets() {
     line-height: 1.55;
     color: #1a1a1a;
     white-space: pre-wrap;
+    overflow-wrap: break-word;
 }
 
 .event-lineup {
