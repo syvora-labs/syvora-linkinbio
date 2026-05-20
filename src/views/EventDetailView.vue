@@ -38,6 +38,11 @@ function artistIdForLineupEntry(name: string): string | null {
     return artistsByName.value.get(name)?.id ?? null
 }
 
+const sortedLineup = computed(() => {
+    const list = event.value?.lineup ?? []
+    return [...list].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+})
+
 const seo = computed(() =>
     event.value ? buildEventMeta(event.value) : null,
 )
@@ -193,10 +198,10 @@ function onBuyTickets() {
             class="event-lineup"
             aria-labelledby="lineup-heading"
         >
-            <h2 id="lineup-heading" class="lineup-heading">LINEUP</h2>
+            <h2 id="lineup-heading" class="lineup-heading">LINEUP A-Z</h2>
             <ul class="lineup-list">
                 <li
-                    v-for="(artist, idx) in event.lineup ?? []"
+                    v-for="(artist, idx) in sortedLineup"
                     :key="`${idx}-${artist}`"
                     class="lineup-item-wrap"
                 >
