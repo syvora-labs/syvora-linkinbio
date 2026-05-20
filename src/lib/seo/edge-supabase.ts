@@ -1,6 +1,6 @@
 import type { SeoEvent } from './types'
 
-const EVENT_COLUMNS = 'id,title,artwork_url,location,event_date,ticket_link'
+const EVENT_COLUMNS = 'id,title,artwork_url,location,event_date,ticket_link,description,lineup'
 
 interface EdgeSupabaseEnv {
     url: string

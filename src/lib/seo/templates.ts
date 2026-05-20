@@ -46,8 +46,14 @@ export function buildEventMeta(event: SeoEvent): SeoMeta {
     const titleSuffix = ` — ${city}, ${dateShort} | ${SITE_NAME}`;
     const maxEventTitle = MAX_TITLE - titleSuffix.length;
     const title = maxEventTitle > 1 ? truncate(event.title, maxEventTitle) + titleSuffix : truncate(event.title + titleSuffix, MAX_TITLE);
-    const description = truncate(`${event.title} live on ${dateLong} at ${event.location}. Electronic music presented by ${SITE_NAME}. Tickets available now.`, MAX_DESCRIPTION);
-    const ogDescription = truncate(`${event.title} on ${dateLong} at ${event.location}. Tickets available now.`, MAX_OG_DESCRIPTION);
+
+    const editorial = event.description?.trim();
+    const description = editorial
+        ? truncate(editorial, MAX_DESCRIPTION)
+        : truncate(`${event.title} on ${dateLong} at ${event.location}. Tickets available now.`, MAX_DESCRIPTION);
+    const ogDescription = editorial
+        ? truncate(editorial, MAX_OG_DESCRIPTION)
+        : truncate(`${event.title} on ${dateLong} at ${event.location}. Tickets available now.`, MAX_OG_DESCRIPTION);
     const ogTitle = truncate(`${event.title} — ${city}, ${dateShort}`, MAX_TITLE);
 
     const tags: MetaTag[] = [
@@ -78,7 +84,8 @@ export function buildEventJsonLd(event: SeoEvent): JsonLd {
     // Same fallback logic as buildEventMeta: schema.org Event recommends
     // an image for rich results, so always emit one.
     const ogImage = absoluteUrl(event.artwork_url) ?? HOME_OG_IMAGE;
-    return {
+
+    const ld: JsonLd = {
         "@context": "https://schema.org",
         "@type": "Event",
         name: event.title,
@@ -108,6 +115,20 @@ export function buildEventJsonLd(event: SeoEvent): JsonLd {
         },
         url: canonical,
     };
+
+    const editorial = event.description?.trim();
+    if (editorial) {
+        ld.description = editorial;
+    }
+
+    if (event.lineup && event.lineup.length > 0) {
+        ld.performer = event.lineup.map((name) => ({
+            "@type": "PerformingGroup",
+            name,
+        }));
+    }
+
+    return ld;
 }
 
 export function buildMusicGroupJsonLd(events: SeoEvent[]): JsonLd {

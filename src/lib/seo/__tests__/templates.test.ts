@@ -75,6 +75,27 @@ describe('buildEventMeta', () => {
         )
         expect(ogImage?.content).toBe('https://eclipseboundaries.ch/og-default.jpg')
     })
+
+    it('uses event description (truncated) when present', () => {
+        const eventWithDescription: SeoEvent = {
+            ...sampleEvent,
+            description:
+                'A night of immersive electronic music featuring two live acts and a closing DJ set on the rooftop terrace.',
+        }
+        const meta = buildEventMeta(eventWithDescription)
+        expect(meta.description).toContain('immersive electronic music')
+        expect(meta.description.length).toBeLessThanOrEqual(155)
+        const ogDescription = meta.tags.find(
+            (t) => t.keyAttr === 'property' && t.key === 'og:description',
+        )
+        expect(ogDescription?.content).toContain('immersive electronic music')
+    })
+
+    it('falls back to generated description when event description is empty', () => {
+        const blank: SeoEvent = { ...sampleEvent, description: '   ' }
+        const meta = buildEventMeta(blank)
+        expect(meta.description).toContain('Tickets available now')
+    })
 })
 
 import {
@@ -132,6 +153,44 @@ describe('buildEventJsonLd', () => {
         const ld = buildEventJsonLd({ ...sampleEvent, artwork_url: null })
         const images = ld.image as string[]
         expect(images).toEqual(['https://eclipseboundaries.ch/og-default.jpg'])
+    })
+
+    it('emits description when event.description is present', () => {
+        const ld = buildEventJsonLd({
+            ...sampleEvent,
+            description: 'Immersive rooftop set with two live acts.',
+        })
+        expect(ld.description).toBe(
+            'Immersive rooftop set with two live acts.',
+        )
+    })
+
+    it('omits description when event.description is blank or absent', () => {
+        const ldA = buildEventJsonLd(sampleEvent)
+        expect('description' in ldA).toBe(false)
+        const ldB = buildEventJsonLd({ ...sampleEvent, description: '  ' })
+        expect('description' in ldB).toBe(false)
+    })
+
+    it('emits performer[] from lineup as PerformingGroup', () => {
+        const ld = buildEventJsonLd({
+            ...sampleEvent,
+            lineup: ['Artist One', 'Artist Two'],
+        })
+        const performers = ld.performer as Record<string, unknown>[]
+        expect(performers).toHaveLength(2)
+        expect(performers[0]).toEqual({
+            '@type': 'PerformingGroup',
+            name: 'Artist One',
+        })
+        expect(performers[1].name).toBe('Artist Two')
+    })
+
+    it('omits performer when lineup is empty or absent', () => {
+        const ldA = buildEventJsonLd(sampleEvent)
+        expect('performer' in ldA).toBe(false)
+        const ldB = buildEventJsonLd({ ...sampleEvent, lineup: [] })
+        expect('performer' in ldB).toBe(false)
     })
 })
 

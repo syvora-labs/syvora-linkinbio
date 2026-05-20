@@ -10,6 +10,10 @@ export interface SeoEvent {
     location: string
     event_date: string // ISO 8601
     ticket_link: string | null
+    /** Editorial long-form text. Plain text with newlines. */
+    description?: string | null
+    /** Ordered list of performing acts (artist names). */
+    lineup?: string[]
 }
 
 export interface MetaTag {

@@ -12,13 +12,36 @@ import type { SeoEvent } from '@/lib/seo/types'
 
 interface EventRow extends SeoEvent {}
 
+interface ArtistLink {
+    id: string
+    name: string
+}
+
+function hasDescription(e: EventRow | null): boolean {
+    return !!e?.description && e.description.trim().length > 0
+}
+
+function hasLineup(e: EventRow | null): boolean {
+    return !!e?.lineup && e.lineup.length > 0
+}
+
 const route = useRoute()
 const router = useRouter()
 const eventId = route.params.eventId as string
 
 const event = ref<EventRow | null>(null)
+const artistsByName = ref<Map<string, ArtistLink>>(new Map())
 const loading = ref(true)
 const notFound = ref(false)
+
+function artistIdForLineupEntry(name: string): string | null {
+    return artistsByName.value.get(name)?.id ?? null
+}
+
+const sortedLineup = computed(() => {
+    const list = event.value?.lineup ?? []
+    return [...list].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+})
 
 const seo = computed(() =>
     event.value ? buildEventMeta(event.value) : null,
@@ -27,7 +50,7 @@ const seo = computed(() =>
 onMounted(async () => {
     const { data, error } = await supabase
         .from('events')
-        .select('id, title, artwork_url, location, event_date, ticket_link')
+        .select('id, title, artwork_url, location, event_date, ticket_link, description, lineup')
         .eq('id', eventId)
         .eq('is_draft', false)
         .eq('is_archived', false)
@@ -41,35 +64,47 @@ onMounted(async () => {
 
     event.value = data as EventRow
     loading.value = false
+
+    const lineup = (data as EventRow).lineup ?? []
+    if (lineup.length > 0) {
+        const { data: artists } = await supabase
+            .from('artists')
+            .select('id, name')
+            .in('name', lineup)
+        if (artists) {
+            const map = new Map<string, ArtistLink>()
+            for (const a of artists as ArtistLink[]) {
+                map.set(a.name, a)
+            }
+            artistsByName.value = map
+        }
+    }
 })
+
+function tagContent(
+    keyAttr: 'name' | 'property',
+    key: string,
+): string | undefined {
+    return seo.value?.tags.find(
+        (t) => t.keyAttr === keyAttr && t.key === key,
+    )?.content
+}
 
 useSeoMeta({
     title: computed(() => seo.value?.title ?? 'Loading… | ECLIPSE BOUNDARIES'),
     description: computed(() => seo.value?.description),
     robots: computed(() => seo.value ? undefined : 'noindex'),
     ogType: computed(() => seo.value ? 'website' : undefined),
-    ogTitle: computed(() =>
-        seo.value?.tags.find(
-            (t) => t.keyAttr === 'property' && t.key === 'og:title',
-        )?.content,
-    ),
-    ogDescription: computed(() =>
-        seo.value?.tags.find(
-            (t) => t.keyAttr === 'property' && t.key === 'og:description',
-        )?.content,
-    ),
-    ogImage: computed(() =>
-        seo.value?.tags.find(
-            (t) => t.keyAttr === 'property' && t.key === 'og:image',
-        )?.content,
-    ),
+    ogSiteName: computed(() => tagContent('property', 'og:site_name')),
+    ogLocale: computed(() => tagContent('property', 'og:locale')),
+    ogTitle: computed(() => tagContent('property', 'og:title')),
+    ogDescription: computed(() => tagContent('property', 'og:description')),
+    ogImage: computed(() => tagContent('property', 'og:image')),
     ogUrl: computed(() => seo.value?.canonical),
     twitterCard: computed(() => seo.value ? ('summary_large_image' as const) : undefined),
-    twitterImage: computed(() =>
-        seo.value?.tags.find(
-            (t) => t.keyAttr === 'name' && t.key === 'twitter:image',
-        )?.content,
-    ),
+    twitterTitle: computed(() => tagContent('name', 'twitter:title')),
+    twitterDescription: computed(() => tagContent('name', 'twitter:description')),
+    twitterImage: computed(() => tagContent('name', 'twitter:image')),
 })
 
 useHead(
@@ -121,10 +156,12 @@ function onBuyTickets() {
 
 <template>
     <main class="event-detail">
+        <router-link to="/" class="brand-link">ECLIPSE BOUNDARIES</router-link>
+
         <div v-if="loading" class="state">Loading…</div>
         <div v-else-if="notFound" class="state">
             <h1>Event not found</h1>
-            <router-link to="/">Back to home</router-link>
+            <router-link to="/" class="back-link standalone-back">← Back to home</router-link>
         </div>
         <article v-else-if="event" class="event-card">
             <img
@@ -142,11 +179,47 @@ function onBuyTickets() {
                 <button type="button" class="ticket-button" @click="onBuyTickets">
                     TICKETS
                 </button>
-                <router-link to="/" class="back-link">
-                    ← Back to home
-                </router-link>
             </div>
         </article>
+
+        <section
+            v-if="event && hasDescription(event)"
+            class="event-description-card"
+            aria-label="Event description"
+        >
+            <p class="event-description-text">{{ event.description }}</p>
+        </section>
+
+        <section
+            v-if="event && hasLineup(event)"
+            class="event-lineup"
+            aria-labelledby="lineup-heading"
+        >
+            <h2 id="lineup-heading" class="lineup-heading">LINEUP A-Z</h2>
+            <ul class="lineup-list">
+                <li
+                    v-for="(artist, idx) in sortedLineup"
+                    :key="`${idx}-${artist}`"
+                    class="lineup-item-wrap"
+                >
+                    <router-link
+                        v-if="artistIdForLineupEntry(artist)"
+                        :to="{ name: 'artist-detail', params: { artistId: artistIdForLineupEntry(artist)! } }"
+                        class="lineup-item lineup-item-link"
+                    >
+                        <span>{{ artist }}</span>
+                        <span class="lineup-chevron" aria-hidden="true">→</span>
+                    </router-link>
+                    <div v-else class="lineup-item">
+                        {{ artist }}
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <router-link v-if="event" to="/" class="back-link standalone-back">
+            ← Back to home
+        </router-link>
     </main>
 </template>
 
@@ -158,6 +231,23 @@ function onBuyTickets() {
     width: 100%;
     max-width: 500px;
     gap: 24px;
+}
+
+.brand-link {
+    font-family: 'Matter-Heavy', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    align-self: flex-start;
+    color: white;
+    text-decoration: none;
+    text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
+    transition: opacity 0.3s ease;
+}
+
+.brand-link:hover {
+    opacity: 0.8;
 }
 
 .state {
@@ -226,14 +316,109 @@ function onBuyTickets() {
 }
 
 .back-link {
-    margin-top: 8px;
-    color: #555;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 10px;
+    color: #1a1a1a;
     font-family: 'Matter-SemiBold', sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     text-decoration: none;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+    cursor: pointer;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .back-link:hover {
-    text-decoration: underline;
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+    transform: translateX(-2px);
+}
+
+.event-description-card {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+}
+
+.event-description-text {
+    margin: 0;
+    font-family: 'Matter-Regular', sans-serif;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: #1a1a1a;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.event-lineup {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lineup-heading {
+    font-family: 'Matter-Heavy', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: white;
+    margin: 4px 0 2px;
+    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
+}
+
+.lineup-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.lineup-item-wrap {
+    width: 100%;
+}
+
+.lineup-item {
+    display: block;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-family: 'Matter-SemiBold', sans-serif;
+    font-size: 1rem;
+    color: #1a1a1a;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+}
+
+.lineup-item-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    text-decoration: none;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.lineup-item-link:hover {
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+    transform: translateX(2px);
+}
+
+.lineup-chevron {
+    font-size: 1.1rem;
+    color: #1a1a1a;
+    flex-shrink: 0;
+}
+
+.standalone-back {
+    align-self: center;
+    margin-top: 4px;
 }
 </style>
