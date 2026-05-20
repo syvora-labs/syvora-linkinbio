@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useSeoMeta } from '@unhead/vue'
 import { supabase } from '@/supabase'
 
@@ -11,7 +11,16 @@ interface Artist {
 }
 
 const route = useRoute()
+const router = useRouter()
 const artistId = route.params.artistId as string
+
+function onBack() {
+    if (window.history.length > 1) {
+        router.back()
+    } else {
+        router.push('/')
+    }
+}
 
 const artist = ref<Artist | null>(null)
 const loading = ref(true)
@@ -65,6 +74,10 @@ useSeoMeta({
             </div>
             <h1 class="artist-name">{{ artist.name }}</h1>
         </article>
+
+        <button v-if="artist" type="button" class="back-link" @click="onBack">
+            ← Back
+        </button>
     </main>
 </template>
 
@@ -147,5 +160,24 @@ useSeoMeta({
     color: #1a1a1a;
     text-align: center;
     overflow-wrap: break-word;
+}
+
+.back-link {
+    align-self: center;
+    margin-top: 4px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Matter-SemiBold', sans-serif;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover {
+    color: white;
+    text-decoration: underline;
 }
 </style>
