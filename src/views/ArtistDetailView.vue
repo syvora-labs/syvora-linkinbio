@@ -8,6 +8,11 @@ interface Artist {
     id: string
     name: string
     picture_url: string | null
+    about: string | null
+}
+
+function hasAbout(a: Artist | null): boolean {
+    return !!a?.about && a.about.trim().length > 0
 }
 
 const route = useRoute()
@@ -29,7 +34,7 @@ const notFound = ref(false)
 onMounted(async () => {
     const { data, error } = await supabase
         .from('artists')
-        .select('id, name, picture_url')
+        .select('id, name, picture_url, about')
         .eq('id', artistId)
         .maybeSingle()
 
@@ -74,6 +79,14 @@ useSeoMeta({
             </div>
             <h1 class="artist-name">{{ artist.name }}</h1>
         </article>
+
+        <section
+            v-if="artist && hasAbout(artist)"
+            class="artist-about-card"
+            aria-label="About the artist"
+        >
+            <p class="artist-about-text">{{ artist.about }}</p>
+        </section>
 
         <button v-if="artist" type="button" class="back-link" @click="onBack">
             ← Back
@@ -159,6 +172,24 @@ useSeoMeta({
     font-size: 1.6rem;
     color: #1a1a1a;
     text-align: center;
+    overflow-wrap: break-word;
+}
+
+.artist-about-card {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+}
+
+.artist-about-text {
+    margin: 0;
+    font-family: 'Matter-Regular', sans-serif;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: #1a1a1a;
+    white-space: pre-wrap;
     overflow-wrap: break-word;
 }
 
