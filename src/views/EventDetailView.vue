@@ -12,6 +12,11 @@ import type { SeoEvent } from '@/lib/seo/types'
 
 interface EventRow extends SeoEvent {}
 
+interface ArtistLink {
+    id: string
+    name: string
+}
+
 function hasDescription(e: EventRow | null): boolean {
     return !!e?.description && e.description.trim().length > 0
 }
@@ -25,8 +30,13 @@ const router = useRouter()
 const eventId = route.params.eventId as string
 
 const event = ref<EventRow | null>(null)
+const artistsByName = ref<Map<string, ArtistLink>>(new Map())
 const loading = ref(true)
 const notFound = ref(false)
+
+function artistIdForLineupEntry(name: string): string | null {
+    return artistsByName.value.get(name)?.id ?? null
+}
 
 const seo = computed(() =>
     event.value ? buildEventMeta(event.value) : null,
@@ -49,6 +59,21 @@ onMounted(async () => {
 
     event.value = data as EventRow
     loading.value = false
+
+    const lineup = (data as EventRow).lineup ?? []
+    if (lineup.length > 0) {
+        const { data: artists } = await supabase
+            .from('artists')
+            .select('id, name')
+            .in('name', lineup)
+        if (artists) {
+            const map = new Map<string, ArtistLink>()
+            for (const a of artists as ArtistLink[]) {
+                map.set(a.name, a)
+            }
+            artistsByName.value = map
+        }
+    }
 })
 
 useSeoMeta({
@@ -173,9 +198,19 @@ function onBuyTickets() {
                 <li
                     v-for="(artist, idx) in event.lineup ?? []"
                     :key="`${idx}-${artist}`"
-                    class="lineup-item"
+                    class="lineup-item-wrap"
                 >
-                    {{ artist }}
+                    <router-link
+                        v-if="artistIdForLineupEntry(artist)"
+                        :to="{ name: 'artist-detail', params: { artistId: artistIdForLineupEntry(artist)! } }"
+                        class="lineup-item lineup-item-link"
+                    >
+                        <span>{{ artist }}</span>
+                        <span class="lineup-chevron" aria-hidden="true">→</span>
+                    </router-link>
+                    <div v-else class="lineup-item">
+                        {{ artist }}
+                    </div>
                 </li>
             </ul>
         </section>
@@ -334,7 +369,13 @@ function onBuyTickets() {
     gap: 10px;
 }
 
+.lineup-item-wrap {
+    width: 100%;
+}
+
 .lineup-item {
+    display: block;
+    width: 100%;
     background: rgba(255, 255, 255, 0.95);
     border-radius: 10px;
     padding: 14px 20px;
@@ -342,6 +383,26 @@ function onBuyTickets() {
     font-size: 1rem;
     color: #1a1a1a;
     box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+}
+
+.lineup-item-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    text-decoration: none;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.lineup-item-link:hover {
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+    transform: translateX(2px);
+}
+
+.lineup-chevron {
+    font-size: 1.1rem;
+    color: #1a1a1a;
+    flex-shrink: 0;
 }
 
 .standalone-back {

@@ -29,6 +29,11 @@ const router = createRouter({
             name: 'view-tickets',
             component: () => import('@/views/ViewTicketsView.vue'),
         },
+        {
+            path: '/artist/:artistId',
+            name: 'artist-detail',
+            component: () => import('@/views/ArtistDetailView.vue'),
+        },
     ],
 })
 
