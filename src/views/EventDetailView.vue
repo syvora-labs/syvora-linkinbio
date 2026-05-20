@@ -34,8 +34,12 @@ const artistsByName = ref<Map<string, ArtistLink>>(new Map())
 const loading = ref(true)
 const notFound = ref(false)
 
+function normalizeArtistKey(name: string): string {
+    return name.trim().toLowerCase()
+}
+
 function artistIdForLineupEntry(name: string): string | null {
-    return artistsByName.value.get(name)?.id ?? null
+    return artistsByName.value.get(normalizeArtistKey(name))?.id ?? null
 }
 
 const sortedLineup = computed(() => {
@@ -66,15 +70,27 @@ onMounted(async () => {
     loading.value = false
 
     const lineup = (data as EventRow).lineup ?? []
-    if (lineup.length > 0) {
-        const { data: artists } = await supabase
+    const filteredLineup = lineup
+        .map((n) => n.trim())
+        .filter((n) => n.length > 0)
+    if (filteredLineup.length > 0) {
+        // Case-insensitive match via PostgREST `or` with `ilike` (no wildcards =
+        // case-insensitive exact match). Double-quote the value so commas etc.
+        // inside an artist name don't break the filter; strip embedded quotes.
+        const orFilter = filteredLineup
+            .map((n) => `name.ilike."${n.replace(/"/g, '')}"`)
+            .join(',')
+        const { data: artists, error: artistsError } = await supabase
             .from('artists')
             .select('id, name')
-            .in('name', lineup)
+            .or(orFilter)
+        if (artistsError) {
+            console.error('Failed to fetch lineup artists:', artistsError)
+        }
         if (artists) {
             const map = new Map<string, ArtistLink>()
             for (const a of artists as ArtistLink[]) {
-                map.set(a.name, a)
+                map.set(normalizeArtistKey(a.name), a)
             }
             artistsByName.value = map
         }
