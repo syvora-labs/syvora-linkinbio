@@ -164,7 +164,7 @@ function onBuyTickets() {
         <div v-if="loading" class="state">Loading…</div>
         <div v-else-if="notFound" class="state">
             <h1>Event not found</h1>
-            <router-link to="/">Back to home</router-link>
+            <router-link to="/" class="back-link standalone-back">← Back to home</router-link>
         </div>
         <article v-else-if="event" class="event-card">
             <img
@@ -319,15 +319,25 @@ function onBuyTickets() {
 }
 
 .back-link {
-    margin-top: 8px;
-    color: #555;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 10px;
+    color: #1a1a1a;
     font-family: 'Matter-SemiBold', sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     text-decoration: none;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+    cursor: pointer;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .back-link:hover {
-    text-decoration: underline;
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+    transform: translateX(-2px);
 }
 
 .event-description-card {
