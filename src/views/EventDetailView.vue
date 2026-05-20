@@ -81,33 +81,30 @@ onMounted(async () => {
     }
 })
 
+function tagContent(
+    keyAttr: 'name' | 'property',
+    key: string,
+): string | undefined {
+    return seo.value?.tags.find(
+        (t) => t.keyAttr === keyAttr && t.key === key,
+    )?.content
+}
+
 useSeoMeta({
     title: computed(() => seo.value?.title ?? 'Loading… | ECLIPSE BOUNDARIES'),
     description: computed(() => seo.value?.description),
     robots: computed(() => seo.value ? undefined : 'noindex'),
     ogType: computed(() => seo.value ? 'website' : undefined),
-    ogTitle: computed(() =>
-        seo.value?.tags.find(
-            (t) => t.keyAttr === 'property' && t.key === 'og:title',
-        )?.content,
-    ),
-    ogDescription: computed(() =>
-        seo.value?.tags.find(
-            (t) => t.keyAttr === 'property' && t.key === 'og:description',
-        )?.content,
-    ),
-    ogImage: computed(() =>
-        seo.value?.tags.find(
-            (t) => t.keyAttr === 'property' && t.key === 'og:image',
-        )?.content,
-    ),
+    ogSiteName: computed(() => tagContent('property', 'og:site_name')),
+    ogLocale: computed(() => tagContent('property', 'og:locale')),
+    ogTitle: computed(() => tagContent('property', 'og:title')),
+    ogDescription: computed(() => tagContent('property', 'og:description')),
+    ogImage: computed(() => tagContent('property', 'og:image')),
     ogUrl: computed(() => seo.value?.canonical),
     twitterCard: computed(() => seo.value ? ('summary_large_image' as const) : undefined),
-    twitterImage: computed(() =>
-        seo.value?.tags.find(
-            (t) => t.keyAttr === 'name' && t.key === 'twitter:image',
-        )?.content,
-    ),
+    twitterTitle: computed(() => tagContent('name', 'twitter:title')),
+    twitterDescription: computed(() => tagContent('name', 'twitter:description')),
+    twitterImage: computed(() => tagContent('name', 'twitter:image')),
 })
 
 useHead(
