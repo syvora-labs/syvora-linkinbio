@@ -39,6 +39,11 @@ const router = createRouter({
             name: 'legal',
             component: () => import('@/views/LegalView.vue'),
         },
+        {
+            path: '/claim/:qrToken',
+            name: 'claim',
+            component: () => import('@/views/ClaimView.vue'),
+        },
     ],
 })
 
