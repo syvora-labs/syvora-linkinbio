@@ -34,6 +34,11 @@ const router = createRouter({
             name: 'artist-detail',
             component: () => import('@/views/ArtistDetailView.vue'),
         },
+        {
+            path: '/legal/:slug(impressum|datenschutz|agb)',
+            name: 'legal',
+            component: () => import('@/views/LegalView.vue'),
+        },
     ],
 })
 

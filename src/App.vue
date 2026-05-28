@@ -1,6 +1,13 @@
+<script setup lang="ts">
+import SiteFooter from '@/components/SiteFooter.vue'
+</script>
+
 <template>
     <div class="gradient-background">
-        <router-view />
+        <main class="main-content">
+            <router-view />
+        </main>
+        <SiteFooter />
     </div>
 </template>
 
@@ -12,10 +19,19 @@
     animation: gradient-animation 12s ease infinite;
     min-height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
     padding: 20px;
     overflow: hidden;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+    z-index: 2;
 }
 
 .gradient-background::before {

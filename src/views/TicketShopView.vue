@@ -70,6 +70,7 @@ const buyerBirthdate = ref('')
 const buyerCountry = ref('')
 const buyerZipcode = ref('')
 const buyerCity = ref('')
+const agbAccepted = ref(false)
 
 const countryQuery = ref('')
 const countryOpen = ref(false)
@@ -202,6 +203,7 @@ const canCheckout = computed(() => {
         && buyerCountry.value.trim()
         && buyerZipcode.value.trim()
         && buyerCity.value.trim()
+        && agbAccepted.value
 })
 
 function formatPrice(cents: number): string {
@@ -303,6 +305,7 @@ async function handleCheckout() {
                     buyer_country: buyerCountry.value.trim(),
                     buyer_zipcode: buyerZipcode.value.trim(),
                     buyer_city: buyerCity.value.trim(),
+                    agb_accepted_at: new Date().toISOString(),
                     service_fee_cents: SERVICE_FEE_CENTS,
                     success_url: `${window.location.origin}/event/${eventId}/tickets/success?session_id={CHECKOUT_SESSION_ID}`,
                     cancel_url: window.location.href,
@@ -504,6 +507,20 @@ async function handleCheckout() {
                 </div>
 
                 <p v-if="error" class="error-message">{{ error }}</p>
+
+                <label v-if="totalItems > 0" class="agb-consent">
+                    <input
+                        v-model="agbAccepted"
+                        type="checkbox"
+                        class="agb-checkbox"
+                    />
+                    <span class="agb-text">
+                        I have read and accept the
+                        <a href="/legal/agb" target="_blank" rel="noopener noreferrer">AGB</a>
+                        and the
+                        <a href="/legal/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutzerklärung</a>.
+                    </span>
+                </label>
 
                 <button
                     v-if="totalItems > 0"
@@ -926,6 +943,43 @@ async function handleCheckout() {
     color: #e74c3c;
     text-align: center;
     margin: 0;
+}
+
+.agb-consent {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+    cursor: pointer;
+}
+
+.agb-checkbox {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    accent-color: #1a1a1a;
+    cursor: pointer;
+}
+
+.agb-text {
+    font-family: 'Matter-Regular', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #1a1a1a;
+}
+
+.agb-text a {
+    color: #6C5CE7;
+    text-decoration: underline;
+}
+
+.agb-text a:hover {
+    opacity: 0.8;
 }
 
 .checkout-button {

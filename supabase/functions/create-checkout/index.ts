@@ -15,12 +15,23 @@ Deno.serve(async (req) => {
     const {
       event_id, items, buyer_name, buyer_email,
       buyer_birthdate, buyer_country, buyer_zipcode, buyer_city,
+      agb_accepted_at,
       service_fee_cents, success_url, cancel_url,
     } = await req.json()
 
     if (!event_id || !items?.length || !buyer_name || !buyer_email) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    // AGB acceptance is mandatory and must be recent (within the last hour)
+    // to prevent stale tabs from replaying an old timestamp.
+    const acceptedAt = typeof agb_accepted_at === 'string' ? new Date(agb_accepted_at) : null
+    if (!acceptedAt || isNaN(acceptedAt.getTime()) || Date.now() - acceptedAt.getTime() > 60 * 60 * 1000 || acceptedAt.getTime() > Date.now() + 60 * 1000) {
+      return new Response(
+        JSON.stringify({ error: 'Please confirm that you accept the AGB and the Datenschutzerklärung.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
@@ -156,6 +167,7 @@ Deno.serve(async (req) => {
         buyer_country: buyer_country || null,
         buyer_zipcode: buyer_zipcode || null,
         buyer_city: buyer_city || null,
+        agb_accepted_at: acceptedAt.toISOString(),
         status: 'pending',
         total_cents: totalCents,
         currency: 'chf',
