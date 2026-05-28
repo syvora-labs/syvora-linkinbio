@@ -287,8 +287,8 @@ async function handleSubmit() {
             <div class="check-icon">&#10003;</div>
             <h2 class="info-title">Your ticket is locked in</h2>
             <p class="info-text">
-                A confirmation email is on its way to {{ buyerEmail }}. The paper strip and the
-                digital ticket both work at the door.
+                A confirmation email is on its way to {{ buyerEmail }}. Show the QR from the email
+                at the door for entry.
             </p>
             <div class="event-summary">
                 <p class="event-name">{{ ticket.eventTitle }}</p>
@@ -394,8 +394,7 @@ async function handleSubmit() {
             </div>
 
             <p class="claim-note">
-                We'll email your ticket QR to the address above. The paper strip and the digital
-                ticket both work at the door.
+                We'll email your ticket QR to the address above. Show it at the door for entry.
             </p>
 
             <p v-if="submitError" class="error-message">{{ submitError }}</p>
