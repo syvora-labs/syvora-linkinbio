@@ -1,32 +1,16 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Free-ticket claim flow.
 --
--- Adds:
---   1. An anon SELECT policy on `tickets` so the public claim page can
---      resolve a qr_token. The policy only matches unclaimed tickets that
---      belong to a free, active phase — the row falls out the moment the
---      claim commits, so a third party who later picks up the paper cannot
---      fish for buyer PII.
---   2. The claim_free_ticket() RPC. Runs inside a single transaction with a
---      FOR UPDATE row lock on the ticket so two concurrent submissions for
---      the same qr_token produce exactly one order. Returns the created
---      order_id (+ ticket_id and event_id) on success; raises
---      ticket_not_found / ticket_already_claimed / ticket_not_claimable /
---      claims_paused for the four failure modes the public site maps to UI
---      states.
+-- The public claim page resolves the qr_token via a service-role Edge
+-- Function (resolve-claim-ticket), so no anon RLS on tickets is required.
+-- This migration only ships the claim_free_ticket() RPC: a SECURITY DEFINER
+-- function that runs inside a single transaction with a FOR UPDATE row lock
+-- on the ticket, so two concurrent submissions for the same qr_token
+-- produce exactly one order. Returns the created order_id (+ ticket_id and
+-- event_id) on success; raises ticket_not_found / ticket_already_claimed /
+-- ticket_not_claimable / claims_paused for the four failure modes the
+-- public site maps to UI states.
 -- ─────────────────────────────────────────────────────────────────────────────
-
-CREATE POLICY "Public can read unclaimed free tickets"
-    ON public.tickets FOR SELECT TO anon
-    USING (
-        status = 'unclaimed'
-        AND EXISTS (
-            SELECT 1 FROM public.ticket_phases p
-            WHERE p.id = tickets.phase_id
-              AND p.is_free = true
-              AND p.is_active = true
-        )
-    );
 
 CREATE OR REPLACE FUNCTION public.claim_free_ticket(
     p_qr_token        UUID,

@@ -32,13 +32,16 @@ Deno.serve(async (req) => {
     const now = new Date().toISOString()
     const phaseColumns = 'id, name, description, price_cents, currency, quantity, sale_start, sale_end, is_private, sort_order'
 
-    // Default list: active, non-private phases for this event
+    // Default list: active, non-private, non-free phases for this event.
+    // Free phases are claim-only (paper-strip QR) and must never appear in
+    // the public ticket shop.
     const { data: defaultPhases, error } = await supabase
       .from('ticket_phases')
       .select(phaseColumns)
       .eq('event_id', event_id)
       .eq('is_active', true)
       .eq('is_private', false)
+      .eq('is_free', false)
       .order('sort_order', { ascending: true })
 
     if (error) {
@@ -58,6 +61,7 @@ Deno.serve(async (req) => {
         .select(phaseColumns)
         .eq('event_id', event_id)
         .eq('is_active', true)
+        .eq('is_free', false)
         .in('access_token', tokens)
       unlockedPhases = data ?? []
     }

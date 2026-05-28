@@ -164,42 +164,31 @@ onMounted(async () => {
     }
 
     try {
-        const {data, error} = await supabase
-            .from('tickets')
-            .select('id, status, ticket_phases!inner(name, is_active), events!inner(title, location, event_date)')
-            .eq('qr_token', qrToken)
-            .maybeSingle()
+        const {data, error: fnError} = await supabase.functions.invoke(
+            'resolve-claim-ticket',
+            {body: {qr_token: qrToken}},
+        )
 
-        if (error) {
-            console.error('Ticket resolve error:', error)
+        if (fnError || data?.error) {
+            console.error('Ticket resolve error:', fnError ?? data?.error)
             state.value = 'error'
             return
         }
 
-        if (!data) {
-            // Anon RLS filters out non-unclaimed or non-free-phase tickets.
-            // We can't distinguish "already claimed" from "unknown" — and the
-            // spec deliberately keeps them indistinguishable.
-            state.value = 'not_recognised'
-            return
+        if (data?.ticket) {
+            ticket.value = {
+                phaseName: data.ticket.phase_name,
+                eventTitle: data.ticket.event_title,
+                eventLocation: data.ticket.event_location,
+                eventDate: data.ticket.event_date,
+            }
         }
 
-        const phase = Array.isArray(data.ticket_phases) ? data.ticket_phases[0] : data.ticket_phases
-        const event = Array.isArray(data.events) ? data.events[0] : data.events
-
-        if (!phase || !event) {
-            state.value = 'not_recognised'
-            return
+        if (data?.state === 'ready' || data?.state === 'claims_paused' || data?.state === 'not_recognised') {
+            state.value = data.state
+        } else {
+            state.value = 'error'
         }
-
-        ticket.value = {
-            phaseName: phase.name,
-            eventTitle: event.title,
-            eventLocation: event.location,
-            eventDate: event.event_date,
-        }
-
-        state.value = phase.is_active === false ? 'claims_paused' : 'ready'
     } catch (e) {
         console.error('Ticket resolve threw:', e)
         state.value = 'error'

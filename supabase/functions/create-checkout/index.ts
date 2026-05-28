@@ -74,7 +74,9 @@ Deno.serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     })
 
-    // Fetch and validate each selected phase
+    // Fetch and validate each selected phase. Free phases are claim-only
+    // and must never reach Stripe checkout, so we filter them out here too —
+    // a crafted client request cannot bypass this server-side check.
     const phaseIds = items.map((i: { phaseId: string }) => i.phaseId)
     const { data: phases, error: phasesError } = await supabase
       .from('ticket_phases')
@@ -82,6 +84,7 @@ Deno.serve(async (req) => {
       .in('id', phaseIds)
       .eq('event_id', event_id)
       .eq('is_active', true)
+      .eq('is_free', false)
 
     if (phasesError || !phases?.length) {
       return new Response(
