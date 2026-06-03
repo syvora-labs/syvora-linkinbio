@@ -20,7 +20,7 @@ No test runner or linter is configured.
 
 ## Architecture
 
-The app uses Vue Router with three routes: home (`/`), ticket shop (`/event/:eventId/tickets`), and ticket success (`/event/:eventId/tickets/success`).
+The app uses Vue Router. Key routes: home (`/`), ticket shop (`/event/:eventId/tickets`), ticket success (`/event/:eventId/tickets/success`), and the merch shop (`/shop`, `/shop/product/:slug`, `/shop/cart`, `/shop/success`, `/shop/order/:orderId`).
 
 - **Entry**: `src/main.ts` → mounts `App.vue` (router shell with gradient background) to `#app`
 - **Router**: `src/router/index.ts` — Vue Router with history mode
@@ -30,6 +30,7 @@ The app uses Vue Router with three routes: home (`/`), ticket shop (`/event/:eve
 - **Ticket Sales**: `EventCard` routes to the internal ticket shop when `ticket_link` is null; otherwise links externally
 - **Supabase client**: `src/supabase.ts` — initialized from `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` env vars
 - **Supabase Edge Functions**: `supabase/functions/` — server-side ticket logic (see below)
+- **Merch shop**: public-facing shop on top of the Syvora ERP catalogue. Views `ShopView.vue` (catalogue), `ProductDetailView.vue`, `CartView.vue`, `ShopSuccessView.vue`. Shared logic in `src/lib/shop/` (config, types, price formatting, signed-image resolution) and a localStorage-backed cart in `src/composables/useCart.ts`. Every catalogue query must filter by `VITE_MANDATOR_ID`. Product images are resolved to short-lived signed URLs via the ERP-owned `webshop-public-images` edge function (not in this repo).
 - **Social links**: defined directly in `HomeView.vue` template (`social-section`)
 - **Fonts**: custom Matter font family in `public/fonts/` (Heavy, SemiBold, Bold, Regular .otf files)
 - **Styles**: scoped CSS in components + global reset in `src/styles.css`. No CSS framework.
@@ -42,6 +43,10 @@ Located in `supabase/functions/`. Deployed separately via `supabase functions de
 - **`get-ticket-phases`**: Returns available ticket phases for an event (filters by active status and sale window, enriches with sold count and remaining availability)
 - **`create-checkout`**: Validates ticket selection, creates a pending order + ticket records in the database, creates a Stripe Checkout Session, returns the checkout URL
 - **`stripe-webhook`**: Handles Stripe webhook events (`checkout.session.completed`, `checkout.session.expired`, `charge.refunded`). Updates order status and ticket records accordingly.
+- **`webshop-create-checkout`**: Merch-shop counterpart to `create-checkout`. Re-validates cart prices/stock/publish state server-side (scoped by mandator), creates a `pending` `product_orders` row, and mints a Stripe Checkout Session (cart round-tripped in metadata).
+- **`webshop-stripe-webhook`**: On `checkout.session.completed`, idempotently decrements stock via the `webshop_decrement_stock_for_order` RPC, inserts `product_order_items` (with snapshots), and marks the order `paid`. Refunds automatically on stock contention. Verifies signatures with its own `WEBSHOP_STRIPE_WEBHOOK_SECRET` (a separate Stripe endpoint from the ticket webhook, so a distinct signing secret); the Stripe API key is still read from `mandators.stripe_secret_key`.
+- **`webshop-order-status`**: Returns minimal order status (+ order id) by Stripe session id for the shop success page to poll.
+- **`webshop-order-details`**: Returns full buyer-safe order details (id, email, total, line items with signed thumbnails, tracking number) by order id, for the order-details page (`/shop/order/:orderId`).
 
 Edge functions use the service role key (auto-available as `SUPABASE_SERVICE_ROLE_KEY`). Stripe keys are stored in the `mandators` table and looked up per-event.
 
@@ -55,6 +60,13 @@ Required Supabase secrets (set via `supabase secrets set`):
 - **`ticket_orders`**: Purchase transactions (buyer info, status, Stripe session/payment IDs, totals)
 - **`tickets`**: Individual tickets per order (qr_token for door scanning, status, check-in tracking)
 - **`mandators`**: Extended with `stripe_secret_key` and `stripe_webhook_secret`
+
+## Database Tables (merch shop)
+
+Owned by the Syvora ERP (schema lives there); the public shop reads/writes a subset:
+
+- **`product_categories`** / **`products`** / **`product_variants`** / **`product_images`**: catalogue (read-only via anon key, filtered by `mandator_id` + published/active flags). `product_variants.stock`: `NULL` = unlimited, `0` = sold out, `> 0` = available.
+- **`product_orders`** / **`product_order_items`**: written server-side (service role) by the webshop edge functions. The public shop only writes `pending` → `paid` / `refunded`; the ERP admin owns `fulfilled` / `cancelled`.
 
 ## Key Conventions
 

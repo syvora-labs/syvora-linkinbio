@@ -60,6 +60,12 @@ useHead({
 
         <EventCard />
 
+        <nav aria-label="Shop" class="links-section">
+            <router-link to="/shop" class="link-button shop-button">
+                Shop
+            </router-link>
+        </nav>
+
         <nav aria-label="External links" class="links-section">
             <a
                 v-for="link in links"
