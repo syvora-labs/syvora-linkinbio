@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, onMounted} from 'vue'
+import {ref, onMounted, computed} from 'vue'
 import {useRoute} from 'vue-router'
 import {useSeoMeta} from '@unhead/vue'
 import {supabase} from '@/supabase'
@@ -33,10 +33,63 @@ useSeoMeta({
 const route = useRoute()
 const orderId = route.params.orderId as string
 
+interface TimelineStep {
+    key: string
+    title: string
+    sentence: string
+    detail: string | null
+    state: 'done' | 'current' | 'upcoming'
+}
+
 const order = ref<OrderDetails | null>(null)
 const imageUrls = ref<Record<string, string>>({})
 const loading = ref(true)
 const error = ref<string | null>(null)
+
+// Derive a buyer-facing tracking history from the order status + tracking number.
+// Statuses flow: pending -> paid -> (fulfilled/shipped). refunded is terminal.
+const timeline = computed<TimelineStep[]>(() => {
+    const o = order.value
+    if (!o) return []
+
+    const received = o.status !== 'pending'
+    const shipped = !!o.tracking_number || o.status === 'fulfilled' || o.status === 'shipped'
+    const refunded = o.status === 'refunded'
+
+    const steps: TimelineStep[] = []
+
+    steps.push({
+        key: 'received',
+        title: 'Order received',
+        sentence: received
+            ? "We've received your order and confirmed your payment. Thank you!"
+            : "We've received your order and are confirming your payment.",
+        detail: `Order ${o.id.slice(0, 8).toUpperCase()} · ${formatPrice(o.total_cents, o.currency)}`,
+        state: received ? 'done' : 'current',
+    })
+
+    steps.push({
+        key: 'shipped',
+        title: 'Order shipped',
+        sentence: shipped
+            ? 'Your order has been handed to the carrier and is on its way to you.'
+            : "We're carefully packing your order. You'll find the tracking number here as soon as it ships.",
+        detail: shipped && o.tracking_number ? `Tracking number: ${o.tracking_number}` : null,
+        state: shipped ? 'done' : received ? 'current' : 'upcoming',
+    })
+
+    if (refunded) {
+        steps.push({
+            key: 'refunded',
+            title: 'Order refunded',
+            sentence: 'This order has been refunded. The amount will be returned to your original payment method.',
+            detail: null,
+            state: 'done',
+        })
+    }
+
+    return steps
+})
 
 onMounted(async () => {
     try {
@@ -93,10 +146,26 @@ onMounted(async () => {
                     <span class="info-label">Order total</span>
                     <span class="info-value">{{ formatPrice(order.total_cents, order.currency) }}</span>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Tracking number</span>
-                    <span v-if="order.tracking_number" class="info-value mono">{{ order.tracking_number }}</span>
-                    <span v-else class="info-value muted">Not yet available — added when your order ships</span>
+            </div>
+
+            <div class="timeline-section">
+                <h2 class="section-heading">Status</h2>
+                <div class="timeline-card">
+                    <ol class="timeline">
+                        <li
+                            v-for="step in timeline"
+                            :key="step.key"
+                            class="timeline-step"
+                            :class="step.state"
+                        >
+                            <span class="timeline-marker"></span>
+                            <div class="timeline-content">
+                                <span class="timeline-title">{{ step.title }}</span>
+                                <span class="timeline-sentence">{{ step.sentence }}</span>
+                                <span v-if="step.detail" class="timeline-detail">{{ step.detail }}</span>
+                            </div>
+                        </li>
+                    </ol>
                 </div>
             </div>
 
@@ -254,10 +323,6 @@ onMounted(async () => {
     font-size: 0.85rem;
 }
 
-.info-value.muted {
-    color: #999;
-}
-
 .section-heading {
     font-family: 'Matter-Heavy', sans-serif;
     font-size: 1.1rem;
@@ -337,6 +402,105 @@ onMounted(async () => {
     color: #1a1a1a;
     white-space: nowrap;
     flex-shrink: 0;
+}
+
+.timeline-card {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 22px 24px;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+}
+
+.timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.timeline-step {
+    position: relative;
+    padding: 0 0 22px 28px;
+}
+
+.timeline-step:last-child {
+    padding-bottom: 0;
+}
+
+/* Connecting line running down to the next step. */
+.timeline-step::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 16px;
+    bottom: 0;
+    width: 2px;
+    background: #e5e3f0;
+}
+
+.timeline-step:last-child::before {
+    display: none;
+}
+
+.timeline-step.done::before {
+    background: #6c5ce7;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 3px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #d6d3e8;
+    box-sizing: border-box;
+}
+
+.timeline-step.done .timeline-marker {
+    background: #6c5ce7;
+    border-color: #6c5ce7;
+}
+
+.timeline-step.current .timeline-marker {
+    border-color: #6c5ce7;
+    box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
+}
+
+.timeline-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.timeline-title {
+    font-family: 'Matter-SemiBold', sans-serif;
+    font-size: 1rem;
+    color: #1a1a1a;
+}
+
+.timeline-step.upcoming .timeline-title {
+    color: #9b97b0;
+}
+
+.timeline-sentence {
+    font-family: 'Matter-Regular', sans-serif;
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.45;
+}
+
+.timeline-step.upcoming .timeline-sentence {
+    color: #aaa;
+}
+
+.timeline-detail {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 0.8rem;
+    color: #6c5ce7;
+    margin-top: 2px;
+    word-break: break-word;
 }
 
 @media (max-width: 600px) {
