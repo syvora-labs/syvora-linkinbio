@@ -57,7 +57,6 @@ onMounted(async () => {
         .select('id, title, artwork_url, location, event_date, ticket_link, description, lineup')
         .eq('id', eventId)
         .eq('is_draft', false)
-        .eq('is_archived', false)
         .maybeSingle()
 
     if (error || !data) {
@@ -172,70 +171,74 @@ function onBuyTickets() {
 
 <template>
     <main class="event-detail">
-        <router-link to="/" class="brand-link">ECLIPSE BOUNDARIES</router-link>
+        <router-link to="/events" class="page-back">← Events</router-link>
 
         <div v-if="loading" class="state">Loading…</div>
         <div v-else-if="notFound" class="state">
             <h1>Event not found</h1>
-            <router-link to="/" class="back-link standalone-back">← Back to home</router-link>
+            <router-link to="/events" class="page-back">← All events</router-link>
         </div>
-        <article v-else-if="event" class="event-card">
-            <img
-                v-if="event.artwork_url"
-                :src="event.artwork_url"
-                :alt="`${event.title} event artwork — ${event.location}`"
-                class="event-cover"
-                fetchpriority="high"
-                loading="eager"
-            />
-            <div class="event-details">
+        <article v-else-if="event" class="event-layout">
+            <div class="event-poster">
+                <img
+                    v-if="event.artwork_url"
+                    :src="event.artwork_url"
+                    :alt="`${event.title} event artwork — ${event.location}`"
+                    class="event-poster-img"
+                    fetchpriority="high"
+                    loading="eager"
+                />
+                <div v-else class="event-poster-img placeholder" aria-hidden="true">
+                    {{ event.title.charAt(0).toUpperCase() }}
+                </div>
+            </div>
+
+            <div class="event-info">
                 <h1 class="event-title">{{ event.title }}</h1>
-                <p class="event-location">{{ event.location }}</p>
-                <p class="event-date">{{ formatLong(event.event_date) }}</p>
+                <div class="event-meta">
+                    <p class="event-location">{{ event.location }}</p>
+                    <p class="event-date">{{ formatLong(event.event_date) }}</p>
+                </div>
                 <button type="button" class="ticket-button" @click="onBuyTickets">
                     TICKETS
                 </button>
+
+                <section
+                    v-if="hasDescription(event)"
+                    class="event-description-card"
+                    aria-label="Event description"
+                >
+                    <p class="event-description-text">{{ event.description }}</p>
+                </section>
+
+                <section
+                    v-if="hasLineup(event)"
+                    class="event-lineup"
+                    aria-labelledby="lineup-heading"
+                >
+                    <h2 id="lineup-heading" class="lineup-heading">LINEUP A-Z</h2>
+                    <ul class="lineup-list">
+                        <li
+                            v-for="(artist, idx) in sortedLineup"
+                            :key="`${idx}-${artist}`"
+                            class="lineup-item-wrap"
+                        >
+                            <router-link
+                                v-if="artistIdForLineupEntry(artist)"
+                                :to="{ name: 'artist-detail', params: { artistId: artistIdForLineupEntry(artist)! } }"
+                                class="lineup-item lineup-item-link"
+                            >
+                                <span>{{ artist }}</span>
+                                <span class="lineup-chevron" aria-hidden="true">→</span>
+                            </router-link>
+                            <div v-else class="lineup-item">
+                                {{ artist }}
+                            </div>
+                        </li>
+                    </ul>
+                </section>
             </div>
         </article>
-
-        <section
-            v-if="event && hasDescription(event)"
-            class="event-description-card"
-            aria-label="Event description"
-        >
-            <p class="event-description-text">{{ event.description }}</p>
-        </section>
-
-        <section
-            v-if="event && hasLineup(event)"
-            class="event-lineup"
-            aria-labelledby="lineup-heading"
-        >
-            <h2 id="lineup-heading" class="lineup-heading">LINEUP A-Z</h2>
-            <ul class="lineup-list">
-                <li
-                    v-for="(artist, idx) in sortedLineup"
-                    :key="`${idx}-${artist}`"
-                    class="lineup-item-wrap"
-                >
-                    <router-link
-                        v-if="artistIdForLineupEntry(artist)"
-                        :to="{ name: 'artist-detail', params: { artistId: artistIdForLineupEntry(artist)! } }"
-                        class="lineup-item lineup-item-link"
-                    >
-                        <span>{{ artist }}</span>
-                        <span class="lineup-chevron" aria-hidden="true">→</span>
-                    </router-link>
-                    <div v-else class="lineup-item">
-                        {{ artist }}
-                    </div>
-                </li>
-            </ul>
-        </section>
-
-        <router-link v-if="event" to="/" class="back-link standalone-back">
-            ← Back to home
-        </router-link>
     </main>
 </template>
 
@@ -243,27 +246,11 @@ function onBuyTickets() {
 .event-detail {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     width: 100%;
-    max-width: 500px;
-    gap: 24px;
-}
-
-.brand-link {
-    font-family: 'Matter-Heavy', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: 3px;
-    align-self: flex-start;
-    color: white;
-    text-decoration: none;
-    text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
-    transition: opacity 0.3s ease;
-}
-
-.brand-link:hover {
-    opacity: 0.8;
+    max-width: 900px;
+    gap: 4px;
+    padding-top: clamp(16px, 4vh, 48px);
 }
 
 .state {
@@ -273,48 +260,76 @@ function onBuyTickets() {
     padding: 40px 0;
 }
 
-.event-card {
+/* Two columns: artwork left, details + lineup right. */
+.event-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 400px) 1fr;
+    align-items: start;
+    gap: 32px;
     width: 100%;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
+}
+
+.event-poster {
+    width: 100%;
+    border-radius: 16px;
     overflow: hidden;
+    background: rgba(255, 255, 255, 0.95);
     box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
 }
 
-.event-cover {
+.event-poster-img {
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 1 / 1;
     object-fit: cover;
     display: block;
 }
 
-.event-details {
-    padding: 20px 24px 24px;
+.event-poster-img.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6c5ce7 0%, #1a1a1a 100%);
+    color: white;
+    font-family: 'Matter-Heavy', sans-serif;
+    font-size: 6rem;
+}
+
+.event-info {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 16px;
+    min-width: 0;
 }
 
 .event-title {
-    font-family: 'Matter-Heavy', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #1a1a1a;
     margin: 0;
+    font-family: 'Matter-Heavy', sans-serif;
+    font-size: clamp(1.9rem, 4.5vw, 3rem);
+    line-height: 1.08;
+    color: white;
+    text-shadow: 0 4px 24px rgba(108, 92, 231, 0.4);
+    overflow-wrap: break-word;
+}
+
+.event-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .event-location,
 .event-date {
     font-family: 'Matter-SemiBold', sans-serif;
-    font-size: 0.95rem;
-    color: #555;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
     margin: 0;
 }
 
 .ticket-button {
-    display: block;
-    margin-top: 12px;
-    padding: 14px;
+    align-self: flex-start;
+    display: inline-block;
+    margin-top: 4px;
+    padding: 14px 40px;
     background: #1a1a1a;
     border: none;
     border-radius: 8px;
@@ -324,33 +339,12 @@ function onBuyTickets() {
     font-size: 1rem;
     text-align: center;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .ticket-button:hover {
     background: #333;
-}
-
-.back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.95);
-    border: none;
-    border-radius: 10px;
-    color: #1a1a1a;
-    font-family: 'Matter-SemiBold', sans-serif;
-    font-size: 0.95rem;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
-    cursor: pointer;
-    transition: box-shadow 0.25s ease, transform 0.25s ease;
-}
-
-.back-link:hover {
-    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
-    transform: translateX(-2px);
+    transform: translateY(-2px);
 }
 
 .event-description-card {
@@ -433,8 +427,18 @@ function onBuyTickets() {
     flex-shrink: 0;
 }
 
-.standalone-back {
-    align-self: center;
-    margin-top: 4px;
+@media (max-width: 720px) {
+    .event-layout {
+        grid-template-columns: 1fr;
+        gap: 22px;
+    }
+
+    .event-poster {
+        max-width: 420px;
+    }
+
+    .event-title {
+        font-size: clamp(1.8rem, 8vw, 2.5rem);
+    }
 }
 </style>

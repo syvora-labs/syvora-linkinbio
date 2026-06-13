@@ -105,9 +105,7 @@ async function handleCheckout() {
 
 <template>
     <div class="container">
-        <div class="shop-header">
-            <router-link to="/shop" class="back-link">&#8592; Continue shopping</router-link>
-        </div>
+        <router-link to="/shop" class="page-back">← Continue shopping</router-link>
 
         <h1 class="page-title">Your cart</h1>
 
@@ -254,34 +252,7 @@ async function handleCheckout() {
     width: 100%;
     max-width: 560px;
     gap: 20px;
-}
-
-.shop-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.back-link {
-    font-family: 'Matter-SemiBold', sans-serif;
-    font-size: 1rem;
-    color: white;
-    text-decoration: none;
-    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
-    transition: opacity 0.3s ease;
-}
-
-.back-link:hover {
-    opacity: 0.8;
-}
-
-.page-title {
-    font-family: 'Matter-Heavy', sans-serif;
-    font-size: 1.6rem;
-    color: white;
-    margin: 0;
-    letter-spacing: 1px;
-    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
+    padding-top: clamp(16px, 4vh, 48px);
 }
 
 .state-card {

@@ -64,7 +64,7 @@ watch(
 
 <template>
     <div class="container">
-        <router-link to="/" class="back-link">ECLIPSE BOUNDARIES</router-link>
+        <router-link to="/" class="page-back">← Home</router-link>
 
         <article class="legal-card">
             <p v-if="loading" class="status">Loading…</p>
@@ -103,24 +103,7 @@ watch(
     width: 100%;
     max-width: 720px;
     gap: 24px;
-}
-
-.back-link {
-    font-family: 'Matter-Heavy', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-align: left;
-    align-self: flex-start;
-    color: white;
-    text-decoration: none;
-    text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
-    transition: opacity 0.3s ease;
-}
-
-.back-link:hover {
-    opacity: 0.8;
+    padding-top: clamp(16px, 4vh, 48px);
 }
 
 .legal-card {
@@ -195,10 +178,6 @@ watch(
 @media (max-width: 600px) {
     .container {
         gap: 20px;
-    }
-
-    .back-link {
-        font-size: 1.3rem;
     }
 
     .legal-card {

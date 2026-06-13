@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import AppNav from '@/components/AppNav.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
 </script>
 
 <template>
     <div class="gradient-background">
+        <AppNav />
         <main class="main-content">
             <router-view />
         </main>
@@ -20,16 +22,20 @@ import SiteFooter from '@/components/SiteFooter.vue'
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 20px;
-    overflow: hidden;
+    /* `clip` (not `hidden`) clips horizontal overflow WITHOUT making this a
+       scroll container — `overflow-x: hidden` would, which silently disables
+       position: sticky on the nav inside. */
+    overflow-x: clip;
 }
 
 .main-content {
     flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     width: 100%;
+    padding: 0 20px 20px;
     position: relative;
     z-index: 2;
 }

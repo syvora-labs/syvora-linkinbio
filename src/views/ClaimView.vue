@@ -251,8 +251,6 @@ async function handleSubmit() {
 
 <template>
     <div class="container">
-        <router-link to="/" class="back-link">ECLIPSE BOUNDARIES</router-link>
-
         <div v-if="state === 'loading'" class="loading-card">
             <p class="loading-text">Loading...</p>
         </div>
@@ -439,24 +437,7 @@ async function handleSubmit() {
     width: 100%;
     max-width: 500px;
     gap: 24px;
-}
-
-.back-link {
-    font-family: 'Matter-Heavy', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-align: left;
-    align-self: flex-start;
-    color: white;
-    text-decoration: none;
-    text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
-    transition: opacity 0.3s ease;
-}
-
-.back-link:hover {
-    opacity: 0.8;
+    padding-top: clamp(32px, 10vh, 96px);
 }
 
 .loading-card,
@@ -732,10 +713,6 @@ async function handleSubmit() {
 @media (max-width: 600px) {
     .container {
         gap: 20px;
-    }
-
-    .back-link {
-        font-size: 1.3rem;
     }
 
     .event-title {
