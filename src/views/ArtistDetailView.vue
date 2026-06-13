@@ -58,39 +58,38 @@ useSeoMeta({
 
 <template>
     <main class="artist-detail">
-        <router-link to="/" class="brand-link">ECLIPSE BOUNDARIES</router-link>
+        <button type="button" class="page-back" @click="onBack">← Back</button>
 
         <div v-if="loading" class="state">Loading…</div>
         <div v-else-if="notFound" class="state">
             <h1>Artist not found</h1>
-            <router-link to="/" class="back-link">← Back to home</router-link>
+            <router-link to="/residents" class="page-back">← All residents</router-link>
         </div>
-        <article v-else-if="artist" class="artist-card">
-            <div v-if="artist.picture_url" class="artist-picture-wrap">
+        <article v-else-if="artist" class="artist-layout">
+            <div class="artist-portrait">
                 <img
+                    v-if="artist.picture_url"
                     :src="artist.picture_url"
                     :alt="`${artist.name} portrait`"
                     class="artist-picture"
                     loading="eager"
                 />
+                <div v-else class="artist-picture placeholder" aria-hidden="true">
+                    {{ artist.name.charAt(0).toUpperCase() }}
+                </div>
             </div>
-            <div v-else class="artist-picture-placeholder" aria-hidden="true">
-                {{ artist.name.charAt(0).toUpperCase() }}
+
+            <div class="artist-info">
+                <h1 class="artist-name">{{ artist.name }}</h1>
+                <section
+                    v-if="hasAbout(artist)"
+                    class="artist-about-card"
+                    aria-label="About the artist"
+                >
+                    <p class="artist-about-text">{{ artist.about }}</p>
+                </section>
             </div>
-            <h1 class="artist-name">{{ artist.name }}</h1>
         </article>
-
-        <section
-            v-if="artist && hasAbout(artist)"
-            class="artist-about-card"
-            aria-label="About the artist"
-        >
-            <p class="artist-about-text">{{ artist.about }}</p>
-        </section>
-
-        <button v-if="artist" type="button" class="back-link" @click="onBack">
-            ← Back
-        </button>
     </main>
 </template>
 
@@ -98,27 +97,11 @@ useSeoMeta({
 .artist-detail {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     width: 100%;
-    max-width: 500px;
-    gap: 24px;
-}
-
-.brand-link {
-    font-family: 'Matter-Heavy', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: 3px;
-    align-self: flex-start;
-    color: white;
-    text-decoration: none;
-    text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
-    transition: opacity 0.3s ease;
-}
-
-.brand-link:hover {
-    opacity: 0.8;
+    max-width: 900px;
+    gap: 4px;
+    padding-top: clamp(16px, 4vh, 48px);
 }
 
 .state {
@@ -128,22 +111,22 @@ useSeoMeta({
     padding: 40px 0;
 }
 
-.artist-card {
+/* Two columns: portrait left, name + bio right. */
+.artist-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 360px) 1fr;
+    align-items: start;
+    gap: 32px;
     width: 100%;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-bottom: 28px;
 }
 
-.artist-picture-wrap {
+.artist-portrait {
     width: 100%;
     aspect-ratio: 1 / 1;
-    background: #1a1a1a;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
 }
 
 .artist-picture {
@@ -153,9 +136,7 @@ useSeoMeta({
     display: block;
 }
 
-.artist-picture-placeholder {
-    width: 100%;
-    aspect-ratio: 1 / 1;
+.artist-picture.placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -163,15 +144,24 @@ useSeoMeta({
     color: white;
     font-family: 'Matter-Heavy', sans-serif;
     font-size: 6rem;
-    letter-spacing: 0;
+}
+
+.artist-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
 }
 
 .artist-name {
-    margin: 24px 24px 0;
+    margin: 0;
     font-family: 'Matter-Heavy', sans-serif;
-    font-size: 1.6rem;
-    color: #1a1a1a;
-    text-align: center;
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    line-height: 1.05;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: white;
+    text-shadow: 0 4px 24px rgba(108, 92, 231, 0.4);
     overflow-wrap: break-word;
 }
 
@@ -193,27 +183,18 @@ useSeoMeta({
     overflow-wrap: break-word;
 }
 
-.back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    align-self: center;
-    margin-top: 4px;
-    padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.95);
-    border: none;
-    border-radius: 10px;
-    color: #1a1a1a;
-    font-family: 'Matter-SemiBold', sans-serif;
-    font-size: 0.95rem;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
-    cursor: pointer;
-    transition: box-shadow 0.25s ease, transform 0.25s ease;
-}
+@media (max-width: 720px) {
+    .artist-layout {
+        grid-template-columns: 1fr;
+        gap: 22px;
+    }
 
-.back-link:hover {
-    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
-    transform: translateX(-2px);
+    .artist-portrait {
+        max-width: 420px;
+    }
+
+    .artist-name {
+        font-size: clamp(2rem, 9vw, 2.75rem);
+    }
 }
 </style>

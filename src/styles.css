@@ -48,3 +48,39 @@ body {
     width: 100%;
     height: 100%;
 }
+
+/* ── Shared page chrome (used across all routed views) ───────────────────
+   The global nav pill provides the brand/home + cart, so individual pages
+   no longer repeat a wordmark. These primitives keep page titles, top
+   spacing and back links consistent everywhere. */
+.page-title {
+    font-family: 'Matter-Heavy', sans-serif;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: white;
+    margin: 0 0 32px;
+    text-shadow: 0 4px 24px rgba(108, 92, 231, 0.4);
+}
+
+.page-back {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 6px;
+    margin-bottom: 20px;
+    padding: 0;
+    background: none;
+    border: none;
+    font-family: 'Matter-SemiBold', sans-serif;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.page-back:hover {
+    color: white;
+    transform: translateX(-3px);
+}

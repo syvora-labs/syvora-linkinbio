@@ -5,7 +5,6 @@ import {supabase} from '@/supabase'
 import {MANDATOR_ID} from '@/lib/shop/config'
 import {resolveImageUrls} from '@/lib/shop/images'
 import {formatPrice} from '@/lib/shop/format'
-import {useCart} from '@/composables/useCart'
 import type {Product, ProductCategory} from '@/lib/shop/types'
 
 useSeoMeta({
@@ -16,8 +15,6 @@ useSeoMeta({
 useHead({
     link: [{rel: 'canonical', href: 'https://eclipseboundaries.ch/shop'}],
 })
-
-const {count: cartCount} = useCart()
 
 const categories = ref<ProductCategory[]>([])
 const products = ref<Product[]>([])
@@ -106,13 +103,7 @@ function primaryUrl(productId: string): string | undefined {
 
 <template>
     <div class="container">
-        <div class="shop-header">
-            <router-link to="/" class="back-link">ECLIPSE BOUNDARIES</router-link>
-            <router-link to="/shop/cart" class="cart-link" aria-label="Cart">
-                Cart
-                <span v-if="cartCount > 0" class="cart-badge">{{ cartCount }}</span>
-            </router-link>
-        </div>
+        <h1 class="page-title">Shop</h1>
 
         <div v-if="loading" class="state-card">
             <p class="state-text">Loading shop...</p>
@@ -188,62 +179,7 @@ function primaryUrl(productId: string): string | undefined {
     width: 100%;
     max-width: 720px;
     gap: 24px;
-}
-
-.shop-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.back-link {
-    font-family: 'Matter-Heavy', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: 3px;
-    color: white;
-    text-decoration: none;
-    text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
-    transition: opacity 0.3s ease;
-}
-
-.back-link:hover {
-    opacity: 0.8;
-}
-
-.cart-link {
-    position: relative;
-    flex-shrink: 0;
-    padding: 10px 18px;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 8px;
-    color: #1a1a1a;
-    text-decoration: none;
-    font-family: 'Matter-SemiBold', sans-serif;
-    font-size: 0.95rem;
-    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
-    transition: box-shadow 0.3s ease;
-}
-
-.cart-link:hover {
-    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
-}
-
-.cart-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 6px;
-    border-radius: 10px;
-    background: #1a1a1a;
-    color: white;
-    font-size: 0.75rem;
-    line-height: 20px;
-    text-align: center;
+    padding-top: clamp(16px, 4vh, 48px);
 }
 
 .state-card {

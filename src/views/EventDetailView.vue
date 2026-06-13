@@ -172,12 +172,12 @@ function onBuyTickets() {
 
 <template>
     <main class="event-detail">
-        <router-link to="/" class="brand-link">ECLIPSE BOUNDARIES</router-link>
+        <router-link to="/events" class="page-back">← Events</router-link>
 
         <div v-if="loading" class="state">Loading…</div>
         <div v-else-if="notFound" class="state">
             <h1>Event not found</h1>
-            <router-link to="/" class="back-link standalone-back">← Back to home</router-link>
+            <router-link to="/events" class="page-back">← All events</router-link>
         </div>
         <article v-else-if="event" class="event-card">
             <img
@@ -233,9 +233,6 @@ function onBuyTickets() {
             </ul>
         </section>
 
-        <router-link v-if="event" to="/" class="back-link standalone-back">
-            ← Back to home
-        </router-link>
     </main>
 </template>
 
@@ -247,23 +244,11 @@ function onBuyTickets() {
     width: 100%;
     max-width: 500px;
     gap: 24px;
+    padding-top: clamp(16px, 4vh, 48px);
 }
 
-.brand-link {
-    font-family: 'Matter-Heavy', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: 3px;
+.page-back {
     align-self: flex-start;
-    color: white;
-    text-decoration: none;
-    text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
-    transition: opacity 0.3s ease;
-}
-
-.brand-link:hover {
-    opacity: 0.8;
 }
 
 .state {
@@ -329,28 +314,6 @@ function onBuyTickets() {
 
 .ticket-button:hover {
     background: #333;
-}
-
-.back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.95);
-    border: none;
-    border-radius: 10px;
-    color: #1a1a1a;
-    font-family: 'Matter-SemiBold', sans-serif;
-    font-size: 0.95rem;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
-    cursor: pointer;
-    transition: box-shadow 0.25s ease, transform 0.25s ease;
-}
-
-.back-link:hover {
-    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
-    transform: translateX(-2px);
 }
 
 .event-description-card {
@@ -433,8 +396,4 @@ function onBuyTickets() {
     flex-shrink: 0;
 }
 
-.standalone-back {
-    align-self: center;
-    margin-top: 4px;
-}
 </style>
