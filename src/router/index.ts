@@ -20,6 +20,11 @@ const router = createRouter({
             component: () => import('@/views/ResidentsView.vue'),
         },
         {
+            path: '/about',
+            name: 'about',
+            component: () => import('@/views/AboutView.vue'),
+        },
+        {
             path: '/radio',
             name: 'radio',
             component: () => import('@/views/RadioView.vue'),

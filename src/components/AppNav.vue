@@ -10,6 +10,7 @@ const {count: cartCount} = useCart()
 const destinations = [
     {label: 'Events', to: '/events'},
     {label: 'Residents', to: '/residents'},
+    {label: 'About Us', to: '/about'},
     {label: 'Shop', to: '/shop'},
     {label: 'Radio', to: '/radio'},
 ]

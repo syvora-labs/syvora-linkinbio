@@ -138,6 +138,8 @@ useHead({
                     <router-link to="/radio">Radio</router-link>
                     <span class="dot">·</span>
                     <router-link to="/residents">Residents</router-link>
+                    <span class="dot">·</span>
+                    <router-link to="/about">About Us</router-link>
                 </nav>
                 </div>
             </aside>
@@ -321,7 +323,8 @@ useHead({
 .hub-jumps {
     display: flex;
     align-items: center;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 6px 10px;
     padding-top: 16px;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     font-family: 'Matter-SemiBold', sans-serif;

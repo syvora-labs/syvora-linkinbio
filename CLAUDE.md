@@ -31,6 +31,7 @@ The app uses Vue Router. Key routes: home (`/`), ticket shop (`/event/:eventId/t
 - **Supabase client**: `src/supabase.ts` — initialized from `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` env vars
 - **Supabase Edge Functions**: `supabase/functions/` — server-side ticket logic (see below)
 - **Merch shop**: public-facing shop on top of the Syvora ERP catalogue. Views `ShopView.vue` (catalogue), `ProductDetailView.vue`, `CartView.vue`, `ShopSuccessView.vue`. Shared logic in `src/lib/shop/` (config, types, price formatting, signed-image resolution) and a localStorage-backed cart in `src/composables/useCart.ts`. Every catalogue query must filter by `VITE_MANDATOR_ID`. Product images are resolved to short-lived signed URLs via the ERP-owned `webshop-public-images` edge function (not in this repo).
+- **About Us**: `AboutView.vue` (`/about`) — lists publicly-visible team members (picture, name, roles, description) from the ERP-owned `team_members` table, filtered by `VITE_MANDATOR_ID` + `is_publicly_visible`
 - **Social links**: defined directly in `HomeView.vue` template (`social-section`)
 - **Fonts**: custom Matter font family in `public/fonts/` (Heavy, SemiBold, Bold, Regular .otf files)
 - **Styles**: scoped CSS in components + global reset in `src/styles.css`. No CSS framework.
