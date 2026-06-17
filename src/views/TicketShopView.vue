@@ -161,7 +161,7 @@ function scrollHighlightedIntoView() {
     })
 }
 
-const SERVICE_FEE_CENTS = 150
+const SERVICE_FEE_RATE = 0.029
 
 const subtotalCents = computed(() => {
     let total = 0
@@ -180,7 +180,7 @@ const totalItems = computed(() => {
     return count
 })
 
-const serviceFeeCents = computed(() => totalItems.value * SERVICE_FEE_CENTS)
+const serviceFeeCents = computed(() => Math.round(subtotalCents.value * SERVICE_FEE_RATE))
 
 const totalCents = computed(() => subtotalCents.value + serviceFeeCents.value)
 
@@ -306,7 +306,7 @@ async function handleCheckout() {
                     buyer_zipcode: buyerZipcode.value.trim(),
                     buyer_city: buyerCity.value.trim(),
                     agb_accepted_at: new Date().toISOString(),
-                    service_fee_cents: SERVICE_FEE_CENTS,
+                    service_fee_rate: SERVICE_FEE_RATE,
                     success_url: `${window.location.origin}/event/${eventId}/tickets/success?session_id={CHECKOUT_SESSION_ID}`,
                     cancel_url: window.location.href,
                 },
@@ -495,7 +495,7 @@ async function handleCheckout() {
                             </template>
                         </div>
                         <div class="summary-row summary-fee">
-                            <span>Service fees ({{ totalItems }}x {{ formatPrice(SERVICE_FEE_CENTS) }})</span>
+                            <span>Service fee ({{ (SERVICE_FEE_RATE * 100).toFixed(1) }}%)</span>
                             <span>{{ formatPrice(serviceFeeCents) }}</span>
                         </div>
                         <div class="summary-divider"></div>
