@@ -19,6 +19,9 @@ export interface Product {
     price_cents: number
     currency: string
     sort_order: number
+    // Per-product flat shipping fee in cents. When set, it overrides the
+    // destination zone rate for this product (null = use the zone rate).
+    shipping_fee_cents: number | null
 }
 
 export interface ProductVariant {
@@ -52,4 +55,7 @@ export interface CartItem {
     price_cents: number
     currency: string
     image_id: string | null
+    // Snapshotted per-product custom shipping fee (null = use the zone rate).
+    // Re-validated server-side at checkout from the live products row.
+    shipping_fee_cents: number | null
 }

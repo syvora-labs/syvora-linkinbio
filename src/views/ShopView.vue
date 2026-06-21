@@ -55,7 +55,7 @@ onMounted(async () => {
                 .order('sort_order', {ascending: true}),
             supabase
                 .from('products')
-                .select('id, category_id, title, slug, description, price_cents, currency, sort_order')
+                .select('id, category_id, title, slug, description, price_cents, currency, sort_order, shipping_fee_cents')
                 .eq('mandator_id', MANDATOR_ID)
                 .eq('is_published', true)
                 .order('sort_order', {ascending: true}),

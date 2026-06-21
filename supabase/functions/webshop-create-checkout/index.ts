@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
         .in('id', variantIds),
       supabase
         .from('products')
-        .select('id, title, price_cents, currency, is_published')
+        .select('id, title, price_cents, currency, is_published, shipping_fee_cents')
         .eq('mandator_id', mandator_id)
         .in('id', productIds),
     ])
@@ -101,9 +101,16 @@ Deno.serve(async (req) => {
     const variants = variantsRes.data ?? []
     const products = Object.fromEntries((productsRes.data ?? []).map(p => [p.id, p]))
 
+    // Flat zone shipping rate for the destination. A per-product custom fee
+    // (products.shipping_fee_cents) overrides this for that product.
+    const zoneShippingCents = SHIPPING_RATE_BY_COUNTRY[shipping_address.country]
+
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []
     let totalCents = 0
     let currency = 'chf'
+    // The order is one shipment, so we charge the single highest applicable
+    // shipping fee across its items (custom fee if set, else the zone rate).
+    let shippingCents: number | null = null
 
     for (const item of cart) {
       const variant = variants.find(v => v.id === item.variant_id && v.product_id === item.product_id)
@@ -115,6 +122,18 @@ Deno.serve(async (req) => {
       // null stock = unlimited / made-to-order; only finite stock is checked.
       if (variant.stock !== null && variant.stock < item.quantity) {
         return json({ error: `Insufficient stock for ${product.title} (${variant.size}).` }, 400)
+      }
+
+      // A custom per-product fee applies regardless of zone; otherwise the
+      // item falls back to the zone rate. If neither exists we don't ship it.
+      const itemShipping = product.shipping_fee_cents != null
+        ? product.shipping_fee_cents
+        : zoneShippingCents
+      if (itemShipping === undefined) {
+        return json({ error: 'We do not ship to the selected country.' }, 400)
+      }
+      if (shippingCents === null || itemShipping > shippingCents) {
+        shippingCents = itemShipping
       }
 
       totalCents += product.price_cents * item.quantity
@@ -135,10 +154,11 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Add shipping as its own line item. The destination is re-derived from the
-    // shipping address server-side — the browser's figure is never trusted.
-    const shippingCents = SHIPPING_RATE_BY_COUNTRY[shipping_address.country]
-    if (shippingCents === undefined) {
+    // Add shipping as its own line item. The figure is computed server-side
+    // (custom per-product fees override the zone rate) — the browser's figure
+    // is never trusted. shippingCents is non-null here because the cart is
+    // guaranteed non-empty and every item resolved a fee in the loop above.
+    if (shippingCents === null) {
       return json({ error: 'We do not ship to the selected country.' }, 400)
     }
     totalCents += shippingCents

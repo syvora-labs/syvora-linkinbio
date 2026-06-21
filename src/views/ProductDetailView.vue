@@ -51,7 +51,7 @@ onMounted(async () => {
     try {
         const {data: productData, error: productError} = await supabase
             .from('products')
-            .select('id, category_id, title, slug, description, price_cents, currency, sort_order')
+            .select('id, category_id, title, slug, description, price_cents, currency, sort_order, shipping_fee_cents')
             .eq('mandator_id', MANDATOR_ID)
             .eq('slug', slug)
             .eq('is_published', true)
@@ -114,6 +114,7 @@ function handleAdd() {
         price_cents: product.value.price_cents,
         currency: product.value.currency,
         image_id: images.value.length ? images.value[0]!.id : null,
+        shipping_fee_cents: product.value.shipping_fee_cents,
     })
     added.value = true
     setTimeout(() => {

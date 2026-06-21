@@ -4,7 +4,7 @@ import {useSeoMeta} from '@unhead/vue'
 import {supabase} from '@/supabase'
 import {MANDATOR_ID} from '@/lib/shop/config'
 import {formatPrice} from '@/lib/shop/format'
-import {shippingCentsForCountry} from '@/lib/shop/shipping'
+import {orderShippingCents} from '@/lib/shop/shipping'
 import {useCart} from '@/composables/useCart'
 
 useSeoMeta({
@@ -40,7 +40,7 @@ const agbAccepted = ref(false)
 const selectedCountryName = computed(
     () => SHIPPING_COUNTRIES.find(c => c.code === country.value)?.name ?? '',
 )
-const shippingCents = computed(() => shippingCentsForCountry(country.value) ?? 0)
+const shippingCents = computed(() => orderShippingCents(items.value, country.value) ?? 0)
 const grandTotalCents = computed(() => totalCents.value + shippingCents.value)
 
 const isValidEmail = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyerEmail.value.trim()))
